@@ -1,4 +1,8 @@
 ignore:
+  resource_names:
+    - AcmeEndpoint
+    - AcmeExternalAccountBinding
+    - AcmeDomainValidation
   field_paths:
     - "RequestCertificateInput.IdempotencyToken"
     - "RequestCertificateInput.ValidationMethod"
@@ -88,7 +92,13 @@ resources:
         is_immutable: true
         compare:
           is_ignored: true
+      ManagedBy:
+        is_immutable: true
+        compare:
+          is_ignored: true
       Options:
+        late_initialize: {}
+      Options.Export:
         late_initialize: {}
       # NOTE(jaypipes): The Create operation (RequestCertificate) has a
       # response with only a single field (certificateArn). All of the status

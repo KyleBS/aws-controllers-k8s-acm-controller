@@ -74,7 +74,7 @@ type CertificateSpec struct {
 	// others allow the use of either RSA and ECDSA keys to ensure that compatibility
 	// is not broken. Check the requirements for the Amazon Web Services service
 	// where you plan to deploy your certificate. For more information about selecting
-	// an algorithm, see Key algorithms (https://docs.aws.amazon.com/acm/latest/userguide/acm-certificate.html#algorithms).
+	// an algorithm, see Key algorithms (https://docs.aws.amazon.com/acm/latest/userguide/acm-certificate-characteristics.html#algorithms-term).
 	//
 	// Algorithms supported for an ACM certificate request include:
 	//
@@ -93,12 +93,19 @@ type CertificateSpec struct {
 	// Default: RSA_2048
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
 	KeyAlgorithm *string `json:"keyAlgorithm,omitempty"`
-	// Currently, you can use this parameter to specify whether to add the certificate
-	// to a certificate transparency log. Certificate transparency makes it possible
-	// to detect SSL/TLS certificates that have been mistakenly or maliciously issued.
-	// Certificates that have not been logged typically produce an error message
-	// in a browser. For more information, see Opting Out of Certificate Transparency
-	// Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-bestpractices.html#best-practices-transparency).
+	// Identifies the Amazon Web Services service that manages the certificate issued
+	// by ACM.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="Value is immutable once set"
+	ManagedBy *string `json:"managedBy,omitempty"`
+	// You can use this parameter to specify whether to export your certificate.
+	//
+	// Certificate transparency logging opt-out is no longer available. All public
+	// certificates are recorded in a certificate transparency log. For more information,
+	// see Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+	//
+	// You can export public ACM certificates to use with Amazon Web Services services
+	// as well as outside the Amazon Web Services Cloud. For more information, see
+	// Certificate Manager exportable public certificate (https://docs.aws.amazon.com/acm/latest/userguide/acm-exportable-certificates.html).
 	Options *CertificateOptions `json:"options,omitempty"`
 	// The private key that matches the public key in the certificate. This field is only valid when importing
 	// an existing certificate into ACM.

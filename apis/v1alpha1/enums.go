@@ -15,6 +15,80 @@
 
 package v1alpha1
 
+type AcmeAccountStatus string
+
+const (
+	AcmeAccountStatus_DEACTIVATED AcmeAccountStatus = "DEACTIVATED"
+	AcmeAccountStatus_REVOKED     AcmeAccountStatus = "REVOKED"
+	AcmeAccountStatus_VALID       AcmeAccountStatus = "VALID"
+)
+
+type AcmeAuthorizationBehavior string
+
+const (
+	AcmeAuthorizationBehavior_PRE_APPROVED AcmeAuthorizationBehavior = "PRE_APPROVED"
+)
+
+type AcmeContact string
+
+const (
+	AcmeContact_NOT_REQUIRED AcmeContact = "NOT_REQUIRED"
+	AcmeContact_REQUIRED     AcmeContact = "REQUIRED"
+)
+
+type AcmeDomainValidationFailureReason string
+
+const (
+	AcmeDomainValidationFailureReason_ACCESS_DENIED         AcmeDomainValidationFailureReason = "ACCESS_DENIED"
+	AcmeDomainValidationFailureReason_DOMAIN_MISMATCH       AcmeDomainValidationFailureReason = "DOMAIN_MISMATCH"
+	AcmeDomainValidationFailureReason_DOMAIN_NOT_ALLOWED    AcmeDomainValidationFailureReason = "DOMAIN_NOT_ALLOWED"
+	AcmeDomainValidationFailureReason_ENDPOINT_NOT_ACTIVE   AcmeDomainValidationFailureReason = "ENDPOINT_NOT_ACTIVE"
+	AcmeDomainValidationFailureReason_HOSTED_ZONE_NOT_FOUND AcmeDomainValidationFailureReason = "HOSTED_ZONE_NOT_FOUND"
+	AcmeDomainValidationFailureReason_INTERNAL_FAILURE      AcmeDomainValidationFailureReason = "INTERNAL_FAILURE"
+	AcmeDomainValidationFailureReason_INVALID_CHANGE_BATCH  AcmeDomainValidationFailureReason = "INVALID_CHANGE_BATCH"
+	AcmeDomainValidationFailureReason_INVALID_PUBLIC_DOMAIN AcmeDomainValidationFailureReason = "INVALID_PUBLIC_DOMAIN"
+	AcmeDomainValidationFailureReason_TIMED_OUT             AcmeDomainValidationFailureReason = "TIMED_OUT"
+)
+
+type AcmeDomainValidationStatus string
+
+const (
+	AcmeDomainValidationStatus_DELETING   AcmeDomainValidationStatus = "DELETING"
+	AcmeDomainValidationStatus_INVALID    AcmeDomainValidationStatus = "INVALID"
+	AcmeDomainValidationStatus_VALID      AcmeDomainValidationStatus = "VALID"
+	AcmeDomainValidationStatus_VALIDATING AcmeDomainValidationStatus = "VALIDATING"
+)
+
+type AcmeEndpointStatus string
+
+const (
+	AcmeEndpointStatus_ACTIVE   AcmeEndpointStatus = "ACTIVE"
+	AcmeEndpointStatus_CREATING AcmeEndpointStatus = "CREATING"
+	AcmeEndpointStatus_DELETING AcmeEndpointStatus = "DELETING"
+	AcmeEndpointStatus_FAILED   AcmeEndpointStatus = "FAILED"
+)
+
+type CertificateExport string
+
+const (
+	CertificateExport_DISABLED CertificateExport = "DISABLED"
+	CertificateExport_ENABLED  CertificateExport = "ENABLED"
+)
+
+type CertificateKeyPairOrigin string
+
+const (
+	CertificateKeyPairOrigin_ACME              CertificateKeyPairOrigin = "ACME"
+	CertificateKeyPairOrigin_AWS_MANAGED       CertificateKeyPairOrigin = "AWS_MANAGED"
+	CertificateKeyPairOrigin_CUSTOMER_PROVIDED CertificateKeyPairOrigin = "CUSTOMER_PROVIDED"
+)
+
+type CertificateManagedBy string
+
+const (
+	CertificateManagedBy_CLOUDFRONT CertificateManagedBy = "CLOUDFRONT"
+)
+
 type CertificateStatus_SDK string
 
 const (
@@ -40,6 +114,20 @@ const (
 	CertificateType_AMAZON_ISSUED CertificateType = "AMAZON_ISSUED"
 	CertificateType_IMPORTED      CertificateType = "IMPORTED"
 	CertificateType_PRIVATE       CertificateType = "PRIVATE"
+)
+
+type ComparisonOperator string
+
+const (
+	ComparisonOperator_CONTAINS ComparisonOperator = "CONTAINS"
+	ComparisonOperator_EQUALS   ComparisonOperator = "EQUALS"
+)
+
+type DomainScopeOption string
+
+const (
+	DomainScopeOption_DISABLED DomainScopeOption = "DISABLED"
+	DomainScopeOption_ENABLED  DomainScopeOption = "ENABLED"
 )
 
 type DomainStatus string
@@ -117,6 +205,20 @@ const (
 	KeyUsageName_NON_REPUDIATION     KeyUsageName = "NON_REPUDIATION"
 )
 
+type PrevalidationType string
+
+const (
+	PrevalidationType_DNS_PREVALIDATION PrevalidationType = "DNS_PREVALIDATION"
+)
+
+type PublicKeyAlgorithm string
+
+const (
+	PublicKeyAlgorithm_EC_prime256v1 PublicKeyAlgorithm = "EC_prime256v1"
+	PublicKeyAlgorithm_EC_secp384r1  PublicKeyAlgorithm = "EC_secp384r1"
+	PublicKeyAlgorithm_RSA_2048      PublicKeyAlgorithm = "RSA_2048"
+)
+
 type RecordType string
 
 const (
@@ -151,7 +253,41 @@ const (
 	RevocationReason_PRIVILEGE_WITHDRAWN    RevocationReason = "PRIVILEGE_WITHDRAWN"
 	RevocationReason_REMOVE_FROM_CRL        RevocationReason = "REMOVE_FROM_CRL"
 	RevocationReason_SUPERCEDED             RevocationReason = "SUPERCEDED"
+	RevocationReason_SUPERSEDED             RevocationReason = "SUPERSEDED"
 	RevocationReason_UNSPECIFIED            RevocationReason = "UNSPECIFIED"
+)
+
+type SearchCertificatesSortBy string
+
+const (
+	SearchCertificatesSortBy_ACME_ACCOUNT_ID             SearchCertificatesSortBy = "ACME_ACCOUNT_ID"
+	SearchCertificatesSortBy_ACME_ENDPOINT_ARN           SearchCertificatesSortBy = "ACME_ENDPOINT_ARN"
+	SearchCertificatesSortBy_CERTIFICATE_ARN             SearchCertificatesSortBy = "CERTIFICATE_ARN"
+	SearchCertificatesSortBy_CERTIFICATE_KEY_PAIR_ORIGIN SearchCertificatesSortBy = "CERTIFICATE_KEY_PAIR_ORIGIN"
+	SearchCertificatesSortBy_COMMON_NAME                 SearchCertificatesSortBy = "COMMON_NAME"
+	SearchCertificatesSortBy_CREATED_AT                  SearchCertificatesSortBy = "CREATED_AT"
+	SearchCertificatesSortBy_EXPORTED                    SearchCertificatesSortBy = "EXPORTED"
+	SearchCertificatesSortBy_EXPORT_OPTION               SearchCertificatesSortBy = "EXPORT_OPTION"
+	SearchCertificatesSortBy_IMPORTED_AT                 SearchCertificatesSortBy = "IMPORTED_AT"
+	SearchCertificatesSortBy_IN_USE                      SearchCertificatesSortBy = "IN_USE"
+	SearchCertificatesSortBy_ISSUED_AT                   SearchCertificatesSortBy = "ISSUED_AT"
+	SearchCertificatesSortBy_KEY_ALGORITHM               SearchCertificatesSortBy = "KEY_ALGORITHM"
+	SearchCertificatesSortBy_MANAGED_BY                  SearchCertificatesSortBy = "MANAGED_BY"
+	SearchCertificatesSortBy_NOT_AFTER                   SearchCertificatesSortBy = "NOT_AFTER"
+	SearchCertificatesSortBy_NOT_BEFORE                  SearchCertificatesSortBy = "NOT_BEFORE"
+	SearchCertificatesSortBy_RENEWAL_ELIGIBILITY         SearchCertificatesSortBy = "RENEWAL_ELIGIBILITY"
+	SearchCertificatesSortBy_RENEWAL_STATUS              SearchCertificatesSortBy = "RENEWAL_STATUS"
+	SearchCertificatesSortBy_REVOKED_AT                  SearchCertificatesSortBy = "REVOKED_AT"
+	SearchCertificatesSortBy_STATUS                      SearchCertificatesSortBy = "STATUS"
+	SearchCertificatesSortBy_TYPE                        SearchCertificatesSortBy = "TYPE"
+	SearchCertificatesSortBy_VALIDATION_METHOD           SearchCertificatesSortBy = "VALIDATION_METHOD"
+)
+
+type SearchCertificatesSortOrder string
+
+const (
+	SearchCertificatesSortOrder_ASCENDING  SearchCertificatesSortOrder = "ASCENDING"
+	SearchCertificatesSortOrder_DESCENDING SearchCertificatesSortOrder = "DESCENDING"
 )
 
 type SortBy string
@@ -167,9 +303,18 @@ const (
 	SortOrder_DESCENDING SortOrder = "DESCENDING"
 )
 
+type TimeType string
+
+const (
+	TimeType_DAYS    TimeType = "DAYS"
+	TimeType_HOURS   TimeType = "HOURS"
+	TimeType_MINUTES TimeType = "MINUTES"
+)
+
 type ValidationMethod string
 
 const (
 	ValidationMethod_DNS   ValidationMethod = "DNS"
 	ValidationMethod_EMAIL ValidationMethod = "EMAIL"
+	ValidationMethod_HTTP  ValidationMethod = "HTTP"
 )

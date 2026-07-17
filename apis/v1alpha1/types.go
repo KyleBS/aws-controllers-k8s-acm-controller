@@ -28,31 +28,102 @@ var (
 	_ = ackv1alpha1.AWSAccountID("")
 )
 
+// Contains ACM-specific metadata about a certificate.
+type ACMCertificateMetadata struct {
+	AcmeAccountID   *string `json:"acmeAccountID,omitempty"`
+	AcmeEndpointARN *string `json:"acmeEndpointARN,omitempty"`
+	// The origin of the certificate's key pair.
+	CertificateKeyPairOrigin *string      `json:"certificateKeyPairOrigin,omitempty"`
+	CreatedAt                *metav1.Time `json:"createdAt,omitempty"`
+	ExportOption             *string      `json:"exportOption,omitempty"`
+	Exported                 *bool        `json:"exported,omitempty"`
+	ImportedAt               *metav1.Time `json:"importedAt,omitempty"`
+	InUse                    *bool        `json:"inUse,omitempty"`
+	IssuedAt                 *metav1.Time `json:"issuedAt,omitempty"`
+	ManagedBy                *string      `json:"managedBy,omitempty"`
+	RenewalEligibility       *string      `json:"renewalEligibility,omitempty"`
+	RenewalStatus            *string      `json:"renewalStatus,omitempty"`
+	RevokedAt                *metav1.Time `json:"revokedAt,omitempty"`
+	Status                   *string      `json:"status,omitempty"`
+	Type                     *string      `json:"type_,omitempty"`
+	ValidationMethod         *string      `json:"validationMethod,omitempty"`
+}
+
+// Filters certificates by ACM metadata.
+type ACMCertificateMetadataFilter struct {
+	AcmeAccountID   *string `json:"acmeAccountID,omitempty"`
+	AcmeEndpointARN *string `json:"acmeEndpointARN,omitempty"`
+	// The origin of the certificate's key pair.
+	CertificateKeyPairOrigin *string `json:"certificateKeyPairOrigin,omitempty"`
+	ExportOption             *string `json:"exportOption,omitempty"`
+	Exported                 *bool   `json:"exported,omitempty"`
+	InUse                    *bool   `json:"inUse,omitempty"`
+	ManagedBy                *string `json:"managedBy,omitempty"`
+	RenewalStatus            *string `json:"renewalStatus,omitempty"`
+	Status                   *string `json:"status,omitempty"`
+	Type                     *string `json:"type_,omitempty"`
+	ValidationMethod         *string `json:"validationMethod,omitempty"`
+}
+
+// Contains detailed information about an ACME account.
+type AcmeAccount struct {
+	AccountURL          *string `json:"accountURL,omitempty"`
+	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+}
+
+// Contains summary information about an ACME account.
+type AcmeAccountSummary struct {
+	AccountURL          *string `json:"accountURL,omitempty"`
+	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+}
+
+// Contains detailed information about an ACME endpoint.
+type AcmeEndpoint struct {
+	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
+	EndpointURL     *string `json:"endpointURL,omitempty"`
+	FailureReason   *string `json:"failureReason,omitempty"`
+}
+
+// Contains summary information about an ACME endpoint.
+type AcmeEndpointSummary struct {
+	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
+	EndpointURL     *string `json:"endpointURL,omitempty"`
+	FailureReason   *string `json:"failureReason,omitempty"`
+}
+
 // Contains metadata about an ACM certificate. This structure is returned in
 // the response to a DescribeCertificate request.
 type CertificateDetail struct {
-	CertificateARN          *string             `json:"certificateARN,omitempty"`
-	CertificateAuthorityARN *string             `json:"certificateAuthorityARN,omitempty"`
-	CreatedAt               *metav1.Time        `json:"createdAt,omitempty"`
-	DomainName              *string             `json:"domainName,omitempty"`
-	DomainValidationOptions []*DomainValidation `json:"domainValidationOptions,omitempty"`
-	ExtendedKeyUsages       []*ExtendedKeyUsage `json:"extendedKeyUsages,omitempty"`
-	FailureReason           *string             `json:"failureReason,omitempty"`
-	ImportedAt              *metav1.Time        `json:"importedAt,omitempty"`
-	InUseBy                 []*string           `json:"inUseBy,omitempty"`
-	IssuedAt                *metav1.Time        `json:"issuedAt,omitempty"`
-	Issuer                  *string             `json:"issuer,omitempty"`
-	KeyAlgorithm            *string             `json:"keyAlgorithm,omitempty"`
-	KeyUsages               []*KeyUsage         `json:"keyUsages,omitempty"`
-	NotAfter                *metav1.Time        `json:"notAfter,omitempty"`
-	NotBefore               *metav1.Time        `json:"notBefore,omitempty"`
-	// Structure that contains options for your certificate. Currently, you can
-	// use this only to specify whether to opt in to or out of certificate transparency
-	// logging. Some browsers require that public certificates issued for your domain
-	// be recorded in a log. Certificates that are not logged typically generate
-	// a browser error. Transparency makes it possible for you to detect SSL/TLS
-	// certificates that have been mistakenly or maliciously issued for your domain.
-	// For general information, see Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+	AcmeAccountID           *string `json:"acmeAccountID,omitempty"`
+	AcmeEndpointARN         *string `json:"acmeEndpointARN,omitempty"`
+	CertificateARN          *string `json:"certificateARN,omitempty"`
+	CertificateAuthorityARN *string `json:"certificateAuthorityARN,omitempty"`
+	// The origin of the certificate's key pair.
+	CertificateKeyPairOrigin *string             `json:"certificateKeyPairOrigin,omitempty"`
+	CreatedAt                *metav1.Time        `json:"createdAt,omitempty"`
+	DomainName               *string             `json:"domainName,omitempty"`
+	DomainValidationOptions  []*DomainValidation `json:"domainValidationOptions,omitempty"`
+	ExtendedKeyUsages        []*ExtendedKeyUsage `json:"extendedKeyUsages,omitempty"`
+	FailureReason            *string             `json:"failureReason,omitempty"`
+	ImportedAt               *metav1.Time        `json:"importedAt,omitempty"`
+	InUseBy                  []*string           `json:"inUseBy,omitempty"`
+	IssuedAt                 *metav1.Time        `json:"issuedAt,omitempty"`
+	Issuer                   *string             `json:"issuer,omitempty"`
+	KeyAlgorithm             *string             `json:"keyAlgorithm,omitempty"`
+	KeyUsages                []*KeyUsage         `json:"keyUsages,omitempty"`
+	ManagedBy                *string             `json:"managedBy,omitempty"`
+	NotAfter                 *metav1.Time        `json:"notAfter,omitempty"`
+	NotBefore                *metav1.Time        `json:"notBefore,omitempty"`
+	// Structure that contains options for your certificate. You can use this structure
+	// to specify whether to export your certificate.
+	//
+	// Certificate transparency logging opt-out is no longer available. All public
+	// certificates are recorded in a certificate transparency log. For general
+	// information, see Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+	//
+	// You can export public ACM certificates to use with Amazon Web Services services
+	// as well as outside Amazon Web Services Cloud. For more information, see Certificate
+	// Manager exportable public certificate (https://docs.aws.amazon.com/acm/latest/userguide/acm-exportable-certificates.html).
 	Options            *CertificateOptions `json:"options,omitempty"`
 	RenewalEligibility *string             `json:"renewalEligibility,omitempty"`
 	// Contains information about the status of ACM's managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)
@@ -69,22 +140,42 @@ type CertificateDetail struct {
 	Type                    *string         `json:"type_,omitempty"`
 }
 
-// Structure that contains options for your certificate. Currently, you can
-// use this only to specify whether to opt in to or out of certificate transparency
-// logging. Some browsers require that public certificates issued for your domain
-// be recorded in a log. Certificates that are not logged typically generate
-// a browser error. Transparency makes it possible for you to detect SSL/TLS
-// certificates that have been mistakenly or maliciously issued for your domain.
-// For general information, see Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+// Defines a filter for searching certificates by ARN, X.509 attributes, or
+// ACM metadata.
+type CertificateFilter struct {
+	CertificateARN *string `json:"certificateARN,omitempty"`
+}
+
+// Structure that contains options for your certificate. You can use this structure
+// to specify whether to export your certificate.
+//
+// Certificate transparency logging opt-out is no longer available. All public
+// certificates are recorded in a certificate transparency log. For general
+// information, see Certificate Transparency Logging (https://docs.aws.amazon.com/acm/latest/userguide/acm-concepts.html#concept-transparency).
+//
+// You can export public ACM certificates to use with Amazon Web Services services
+// as well as outside Amazon Web Services Cloud. For more information, see Certificate
+// Manager exportable public certificate (https://docs.aws.amazon.com/acm/latest/userguide/acm-exportable-certificates.html).
 type CertificateOptions struct {
 	CertificateTransparencyLoggingPreference *string `json:"certificateTransparencyLoggingPreference,omitempty"`
+	Export                                   *string `json:"export,omitempty"`
+}
+
+// Contains information about a certificate returned by the SearchCertificates
+// action. This structure includes the certificate ARN, X.509 attributes, and
+// ACM metadata.
+type CertificateSearchResult struct {
+	CertificateARN *string `json:"certificateARN,omitempty"`
 }
 
 // This structure is returned in the response object of ListCertificates action.
 type CertificateSummary struct {
-	CertificateARN                       *string      `json:"certificateARN,omitempty"`
+	CertificateARN *string `json:"certificateARN,omitempty"`
+	// The origin of the certificate's key pair.
+	CertificateKeyPairOrigin             *string      `json:"certificateKeyPairOrigin,omitempty"`
 	CreatedAt                            *metav1.Time `json:"createdAt,omitempty"`
 	DomainName                           *string      `json:"domainName,omitempty"`
+	ExportOption                         *string      `json:"exportOption,omitempty"`
 	Exported                             *bool        `json:"exported,omitempty"`
 	ExtendedKeyUsages                    []*string    `json:"extendedKeyUsages,omitempty"`
 	HasAdditionalSubjectAlternativeNames *bool        `json:"hasAdditionalSubjectAlternativeNames,omitempty"`
@@ -93,6 +184,7 @@ type CertificateSummary struct {
 	IssuedAt                             *metav1.Time `json:"issuedAt,omitempty"`
 	KeyAlgorithm                         *string      `json:"keyAlgorithm,omitempty"`
 	KeyUsages                            []*string    `json:"keyUsages,omitempty"`
+	ManagedBy                            *string      `json:"managedBy,omitempty"`
 	NotAfter                             *metav1.Time `json:"notAfter,omitempty"`
 	NotBefore                            *metav1.Time `json:"notBefore,omitempty"`
 	RenewalEligibility                   *string      `json:"renewalEligibility,omitempty"`
@@ -102,9 +194,44 @@ type CertificateSummary struct {
 	Type                                 *string      `json:"type_,omitempty"`
 }
 
+// Defines the X.500 relative distinguished name (RDN).
+type CustomAttribute struct {
+	ObjectIdentifier *string `json:"objectIdentifier,omitempty"`
+	Value            *string `json:"value,omitempty"`
+}
+
+// DNS prevalidation details including the resource record for validation.
+type DNSPrevalidationDetails struct {
+	// Contains a DNS record value that you can use to validate ownership or control
+	// of a domain. This is used by the DescribeCertificate action.
+	ResourceRecord *ResourceRecord `json:"resourceRecord,omitempty"`
+}
+
+// Contains X.500 distinguished name information.
+type DistinguishedName struct {
+	CommonName                 *string `json:"commonName,omitempty"`
+	Country                    *string `json:"country,omitempty"`
+	DistinguishedNameQualifier *string `json:"distinguishedNameQualifier,omitempty"`
+	GenerationQualifier        *string `json:"generationQualifier,omitempty"`
+	GivenName                  *string `json:"givenName,omitempty"`
+	Initials                   *string `json:"initials,omitempty"`
+	Locality                   *string `json:"locality,omitempty"`
+	Organization               *string `json:"organization,omitempty"`
+	OrganizationalUnit         *string `json:"organizationalUnit,omitempty"`
+	Pseudonym                  *string `json:"pseudonym,omitempty"`
+	SerialNumber               *string `json:"serialNumber,omitempty"`
+	State                      *string `json:"state,omitempty"`
+	Surname                    *string `json:"surname,omitempty"`
+	Title                      *string `json:"title,omitempty"`
+}
+
 // Contains information about the validation of each domain name in the certificate.
 type DomainValidation struct {
 	DomainName *string `json:"domainName,omitempty"`
+	// Contains information for HTTP-based domain validation of certificates requested
+	// through Amazon CloudFront and issued by ACM. This field exists only when
+	// the certificate type is AMAZON_ISSUED and the validation method is HTTP.
+	HTTPRedirect *HTTPRedirect `json:"httpRedirect,omitempty"`
 	// Contains a DNS record value that you can use to validate ownership or control
 	// of a domain. This is used by the DescribeCertificate action.
 	ResourceRecord   *ResourceRecord `json:"resourceRecord,omitempty"`
@@ -129,18 +256,51 @@ type ExtendedKeyUsage struct {
 	OID  *string `json:"oid,omitempty"`
 }
 
+// Contains details about a failure.
+type FailureDetails struct {
+	Message *string `json:"message,omitempty"`
+}
+
 // This structure can be used in the ListCertificates action to filter the output
 // of the certificate list.
 type Filters struct {
+	ExportOption     *string   `json:"exportOption,omitempty"`
 	ExtendedKeyUsage []*string `json:"extendedKeyUsage,omitempty"`
 	KeyTypes         []*string `json:"keyTypes,omitempty"`
 	KeyUsage         []*string `json:"keyUsage,omitempty"`
+	ManagedBy        *string   `json:"managedBy,omitempty"`
+}
+
+// Describes an ASN.1 X.400 GeneralName as defined in RFC 5280 (https://datatracker.ietf.org/doc/html/rfc5280).
+// Only one of the following naming options should be provided.
+type GeneralName struct {
+	DNSName                   *string `json:"dnsName,omitempty"`
+	IPAddress                 *string `json:"ipAddress,omitempty"`
+	RegisteredID              *string `json:"registeredID,omitempty"`
+	RFC822Name                *string `json:"rfc822Name,omitempty"`
+	UniformResourceIdentifier *string `json:"uniformResourceIdentifier,omitempty"`
+}
+
+// Contains information for HTTP-based domain validation of certificates requested
+// through Amazon CloudFront and issued by ACM. This field exists only when
+// the certificate type is AMAZON_ISSUED and the validation method is HTTP.
+type HTTPRedirect struct {
+	RedirectFrom *string `json:"redirectFrom,omitempty"`
+	RedirectTo   *string `json:"redirectTo,omitempty"`
 }
 
 // The Key Usage X.509 v3 extension defines the purpose of the public key contained
 // in the certificate.
 type KeyUsage struct {
 	Name *string `json:"name,omitempty"`
+}
+
+// Defines a custom ASN.1 X.400 GeneralName using an object identifier (OID)
+// and value. For more information, see NIST's definition of Object Identifier
+// (OID) (https://csrc.nist.gov/glossary/term/Object_Identifier).
+type OtherName struct {
+	ObjectIdentifier *string `json:"objectIdentifier,omitempty"`
+	Value            *string `json:"value,omitempty"`
 }
 
 // Contains information about the status of ACM's managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)
@@ -165,4 +325,26 @@ type ResourceRecord struct {
 type Tag struct {
 	Key   *string `json:"key,omitempty"`
 	Value *string `json:"value,omitempty"`
+}
+
+// Specifies a time range for filtering certificates.
+type TimestampRange struct {
+	End   *metav1.Time `json:"end,omitempty"`
+	Start *metav1.Time `json:"start,omitempty"`
+}
+
+// Filters certificates by X.509 attributes.
+type X509AttributeFilter struct {
+	ExtendedKeyUsage *string `json:"extendedKeyUsage,omitempty"`
+	KeyAlgorithm     *string `json:"keyAlgorithm,omitempty"`
+	KeyUsage         *string `json:"keyUsage,omitempty"`
+}
+
+// Contains X.509 certificate attributes extracted from the certificate.
+type X509Attributes struct {
+	ExtendedKeyUsages []*string    `json:"extendedKeyUsages,omitempty"`
+	KeyAlgorithm      *string      `json:"keyAlgorithm,omitempty"`
+	KeyUsages         []*string    `json:"keyUsages,omitempty"`
+	NotAfter          *metav1.Time `json:"notAfter,omitempty"`
+	NotBefore         *metav1.Time `json:"notBefore,omitempty"`
 }

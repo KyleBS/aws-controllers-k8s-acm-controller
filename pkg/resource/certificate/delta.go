@@ -78,6 +78,13 @@ func newResourceDelta(
 				delta.Add("Spec.Options.CertificateTransparencyLoggingPreference", a.ko.Spec.Options.CertificateTransparencyLoggingPreference, b.ko.Spec.Options.CertificateTransparencyLoggingPreference)
 			}
 		}
+		if ackcompare.HasNilDifference(a.ko.Spec.Options.Export, b.ko.Spec.Options.Export) {
+			delta.Add("Spec.Options.Export", a.ko.Spec.Options.Export, b.ko.Spec.Options.Export)
+		} else if a.ko.Spec.Options.Export != nil && b.ko.Spec.Options.Export != nil {
+			if *a.ko.Spec.Options.Export != *b.ko.Spec.Options.Export {
+				delta.Add("Spec.Options.Export", a.ko.Spec.Options.Export, b.ko.Spec.Options.Export)
+			}
+		}
 	}
 	desiredACKTags, _ := convertToOrderedACKTags(a.ko.Spec.Tags)
 	latestACKTags, _ := convertToOrderedACKTags(b.ko.Spec.Tags)

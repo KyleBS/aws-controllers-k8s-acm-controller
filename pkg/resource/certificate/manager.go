@@ -50,7 +50,7 @@ var (
 // +kubebuilder:rbac:groups=acm.services.k8s.aws,resources=certificates,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=acm.services.k8s.aws,resources=certificates/status,verbs=get;update;patch
 
-var lateInitializeFieldNames = []string{"KeyAlgorithm", "Options", "SubjectAlternativeNames"}
+var lateInitializeFieldNames = []string{"KeyAlgorithm", "Options", "Export", "SubjectAlternativeNames"}
 
 // resourceManager is responsible for providing a consistent way to perform
 // CRUD operations in a backend AWS service API for Book custom resources.
@@ -269,6 +269,11 @@ func (rm *resourceManager) incompleteLateInitialization(
 	if ko.Spec.Options == nil {
 		return true
 	}
+	if ko.Spec.Options != nil {
+		if ko.Spec.Options.Export == nil {
+			return true
+		}
+	}
 	if ko.Spec.SubjectAlternativeNames == nil {
 		return true
 	}
@@ -288,6 +293,11 @@ func (rm *resourceManager) lateInitializeFromReadOneOutput(
 	}
 	if observedKo.Spec.Options != nil && latestKo.Spec.Options == nil {
 		latestKo.Spec.Options = observedKo.Spec.Options
+	}
+	if observedKo.Spec.Options != nil && latestKo.Spec.Options != nil {
+		if observedKo.Spec.Options.Export != nil && latestKo.Spec.Options.Export == nil {
+			latestKo.Spec.Options.Export = observedKo.Spec.Options.Export
+		}
 	}
 	if observedKo.Spec.SubjectAlternativeNames != nil && latestKo.Spec.SubjectAlternativeNames == nil {
 		latestKo.Spec.SubjectAlternativeNames = observedKo.Spec.SubjectAlternativeNames
