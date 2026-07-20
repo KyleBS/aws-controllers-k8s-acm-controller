@@ -99,3 +99,26 @@ You can also learn more about our [Governance](/GOVERNANCE.md) structure.
 ## License
 
 This project is [licensed](/LICENSE) under the Apache-2.0 License.
+
+## ACME Resources
+
+This controller also manages ACME (Automatic Certificate Management Environment) resources for ACM. ACME enables standards-based certificate automation using any ACME-compatible client (cert-manager, Certbot, acme.sh, etc.).
+
+### AcmeEndpoint
+
+Creates a managed ACME server endpoint with a unique URL for certificate automation.
+
+```yaml
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeEndpoint
+metadata:
+  name: my-acme-endpoint
+spec:
+  authorizationBehavior: PRE_APPROVED
+  certificateAuthority:
+    publicCertificateAuthority: {}
+  contact: NOT_REQUIRED
+```
+
+After creation, `status.endpointURL` contains the ACME directory URL (e.g., `https://acm-acme-enroll.us-east-1.api.aws/<id>/directory`).
+

@@ -67,28 +67,86 @@ type ACMCertificateMetadataFilter struct {
 
 // Contains detailed information about an ACME account.
 type AcmeAccount struct {
-	AccountURL          *string `json:"accountURL,omitempty"`
-	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+	AccountURL          *string      `json:"accountURL,omitempty"`
+	CreatedAt           *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
 // Contains summary information about an ACME account.
 type AcmeAccountSummary struct {
-	AccountURL          *string `json:"accountURL,omitempty"`
-	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+	AccountURL          *string      `json:"accountURL,omitempty"`
+	CreatedAt           *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
-// Contains detailed information about an ACME endpoint.
-type AcmeEndpoint struct {
-	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
-	EndpointURL     *string `json:"endpointURL,omitempty"`
-	FailureReason   *string `json:"failureReason,omitempty"`
+// Contains detailed information about an ACME domain validation.
+type AcmeDomainValidation struct {
+	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
+	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Contains summary information about an ACME domain validation.
+type AcmeDomainValidationSummary struct {
+	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
+	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
 }
 
 // Contains summary information about an ACME endpoint.
 type AcmeEndpointSummary struct {
-	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
-	EndpointURL     *string `json:"endpointURL,omitempty"`
-	FailureReason   *string `json:"failureReason,omitempty"`
+	AcmeEndpointARN       *string `json:"acmeEndpointARN,omitempty"`
+	AuthorizationBehavior *string `json:"authorizationBehavior,omitempty"`
+	// Defines the certificate authority to use for an ACME endpoint.
+	CertificateAuthority *CertificateAuthority `json:"certificateAuthority,omitempty"`
+	CertificateTags      []*Tag                `json:"certificateTags,omitempty"`
+	Contact              *string               `json:"contact,omitempty"`
+	CreatedAt            *metav1.Time          `json:"createdAt,omitempty"`
+	EndpointURL          *string               `json:"endpointURL,omitempty"`
+	FailureReason        *string               `json:"failureReason,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME endpoint.
+type AcmeEndpoint_SDK struct {
+	AcmeEndpointARN       *string `json:"acmeEndpointARN,omitempty"`
+	AuthorizationBehavior *string `json:"authorizationBehavior,omitempty"`
+	// Defines the certificate authority to use for an ACME endpoint.
+	CertificateAuthority *CertificateAuthority `json:"certificateAuthority,omitempty"`
+	CertificateTags      []*Tag                `json:"certificateTags,omitempty"`
+	Contact              *string               `json:"contact,omitempty"`
+	CreatedAt            *metav1.Time          `json:"createdAt,omitempty"`
+	EndpointURL          *string               `json:"endpointURL,omitempty"`
+	FailureReason        *string               `json:"failureReason,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME external account binding.
+type AcmeExternalAccountBinding struct {
+	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt       *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt      *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt       *metav1.Time `json:"revokedAt,omitempty"`
+	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Contains summary information about an ACME external account binding.
+type AcmeExternalAccountBindingSummary struct {
+	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt       *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt      *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt       *metav1.Time `json:"revokedAt,omitempty"`
+	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Defines the certificate authority to use for an ACME endpoint.
+type CertificateAuthority struct {
+	// Configuration for a public certificate authority.
+	PublicCertificateAuthority *PublicCertificateAuthority `json:"publicCertificateAuthority,omitempty"`
 }
 
 // Contains metadata about an ACM certificate. This structure is returned in
@@ -301,6 +359,11 @@ type KeyUsage struct {
 type OtherName struct {
 	ObjectIdentifier *string `json:"objectIdentifier,omitempty"`
 	Value            *string `json:"value,omitempty"`
+}
+
+// Configuration for a public certificate authority.
+type PublicCertificateAuthority struct {
+	AllowedKeyAlgorithms []*string `json:"allowedKeyAlgorithms,omitempty"`
 }
 
 // Contains information about the status of ACM's managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)

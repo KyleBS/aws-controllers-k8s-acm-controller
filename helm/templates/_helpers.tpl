@@ -72,6 +72,7 @@ rules:
 - apiGroups:
   - acm.services.k8s.aws
   resources:
+  - acmeendpoints
   - certificates
   verbs:
   - create
@@ -84,6 +85,7 @@ rules:
 - apiGroups:
   - acm.services.k8s.aws
   resources:
+  - acmeendpoints/status
   - certificates/status
   verbs:
   - get

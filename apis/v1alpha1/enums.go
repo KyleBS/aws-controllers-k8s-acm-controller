@@ -59,13 +59,13 @@ const (
 	AcmeDomainValidationStatus_VALIDATING AcmeDomainValidationStatus = "VALIDATING"
 )
 
-type AcmeEndpointStatus string
+type AcmeEndpointStatus_SDK string
 
 const (
-	AcmeEndpointStatus_ACTIVE   AcmeEndpointStatus = "ACTIVE"
-	AcmeEndpointStatus_CREATING AcmeEndpointStatus = "CREATING"
-	AcmeEndpointStatus_DELETING AcmeEndpointStatus = "DELETING"
-	AcmeEndpointStatus_FAILED   AcmeEndpointStatus = "FAILED"
+	AcmeEndpointStatus_SDK_ACTIVE   AcmeEndpointStatus_SDK = "ACTIVE"
+	AcmeEndpointStatus_SDK_CREATING AcmeEndpointStatus_SDK = "CREATING"
+	AcmeEndpointStatus_SDK_DELETING AcmeEndpointStatus_SDK = "DELETING"
+	AcmeEndpointStatus_SDK_FAILED   AcmeEndpointStatus_SDK = "FAILED"
 )
 
 type CertificateExport string

@@ -13,7 +13,14 @@
                 "acm:AddTagsToCertificate",
                 "acm:RemoveTagsFromCertificate",
                 "acm:ListTagsForCertificate",
-                "acm:ExportCertificate"
+                "acm:ExportCertificate",
+                "acm:CreateAcmeEndpoint",
+                "acm:DescribeAcmeEndpoint",
+                "acm:UpdateAcmeEndpoint",
+                "acm:DeleteAcmeEndpoint",
+                "acm:TagResource",
+                "acm:UntagResource",
+                "acm:ListTagsForResource"
             ],
             "Resource": "*"
         },

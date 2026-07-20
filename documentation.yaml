@@ -13,3 +13,18 @@ resources:
         prepend: |
           The Amazon Resource Name (ARN) of an imported certificate to replace. This field is only valid when importing
           an existing certificate into ACM.
+
+  AcmeEndpoint:
+    fields:
+      AuthorizationBehavior:
+        prepend: |
+          The authorization behavior for the ACME endpoint. Valid values: PRE_APPROVED.
+      CertificateAuthority:
+        prepend: |
+          The certificate authority to use for issuing certificates through this endpoint.
+          Currently only PublicCertificateAuthority (Amazon Trust Services) is supported.
+          Optionally specify AllowedKeyAlgorithms to restrict key algorithms for issued certificates.
+      Contact:
+        prepend: |
+          Whether ACME clients must provide contact information during account registration.
+          Valid values: REQUIRED, NOT_REQUIRED.

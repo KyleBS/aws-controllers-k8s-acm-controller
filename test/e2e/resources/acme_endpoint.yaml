@@ -1,0 +1,12 @@
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeEndpoint
+metadata:
+  name: $ACME_ENDPOINT_NAME
+spec:
+  authorizationBehavior: PRE_APPROVED
+  certificateAuthority:
+    publicCertificateAuthority: {}
+  contact: NOT_REQUIRED
+  tags:
+  - key: environment
+    value: dev
