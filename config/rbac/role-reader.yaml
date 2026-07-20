@@ -9,6 +9,9 @@ rules:
 - apiGroups:
   - acm.services.k8s.aws
   resources:
+  - acmedomainvalidations
+  - acmeendpoints
+  - acmeexternalaccountbindings
   - certificates
   verbs:
   - get

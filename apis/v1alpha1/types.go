@@ -67,28 +67,108 @@ type ACMCertificateMetadataFilter struct {
 
 // Contains detailed information about an ACME account.
 type AcmeAccount struct {
-	AccountURL          *string `json:"accountURL,omitempty"`
-	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+	AccountURL                    *string      `json:"accountURL,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint           *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
 // Contains summary information about an ACME account.
 type AcmeAccountSummary struct {
-	AccountURL          *string `json:"accountURL,omitempty"`
-	PublicKeyThumbprint *string `json:"publicKeyThumbprint,omitempty"`
+	AccountURL                    *string      `json:"accountURL,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint           *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
-// Contains detailed information about an ACME endpoint.
-type AcmeEndpoint struct {
-	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
-	EndpointURL     *string `json:"endpointURL,omitempty"`
-	FailureReason   *string `json:"failureReason,omitempty"`
+// Contains summary information about an ACME domain validation.
+type AcmeDomainValidationSummary struct {
+	AcmeDomainValidationARN *string      `json:"acmeDomainValidationARN,omitempty"`
+	AcmeEndpointARN         *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt               *metav1.Time `json:"createdAt,omitempty"`
+	DomainName              *string      `json:"domainName,omitempty"`
+	// Contains details about a failure.
+	FailureDetails *FailureDetails `json:"failureDetails,omitempty"`
+	// Contains details about the prevalidation configuration.
+	PrevalidationDetails *PrevalidationDetails `json:"prevalidationDetails,omitempty"`
+	PrevalidationType    *string               `json:"prevalidationType,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME domain validation.
+type AcmeDomainValidation_SDK struct {
+	AcmeDomainValidationARN *string      `json:"acmeDomainValidationARN,omitempty"`
+	AcmeEndpointARN         *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt               *metav1.Time `json:"createdAt,omitempty"`
+	DomainName              *string      `json:"domainName,omitempty"`
+	// Contains details about a failure.
+	FailureDetails *FailureDetails `json:"failureDetails,omitempty"`
+	// Contains details about the prevalidation configuration.
+	PrevalidationDetails *PrevalidationDetails `json:"prevalidationDetails,omitempty"`
+	PrevalidationType    *string               `json:"prevalidationType,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
 }
 
 // Contains summary information about an ACME endpoint.
 type AcmeEndpointSummary struct {
-	CertificateTags []*Tag  `json:"certificateTags,omitempty"`
-	EndpointURL     *string `json:"endpointURL,omitempty"`
-	FailureReason   *string `json:"failureReason,omitempty"`
+	AcmeEndpointARN       *string `json:"acmeEndpointARN,omitempty"`
+	AuthorizationBehavior *string `json:"authorizationBehavior,omitempty"`
+	// Defines the certificate authority to use for an ACME endpoint.
+	CertificateAuthority *CertificateAuthority `json:"certificateAuthority,omitempty"`
+	CertificateTags      []*Tag                `json:"certificateTags,omitempty"`
+	Contact              *string               `json:"contact,omitempty"`
+	CreatedAt            *metav1.Time          `json:"createdAt,omitempty"`
+	EndpointURL          *string               `json:"endpointURL,omitempty"`
+	FailureReason        *string               `json:"failureReason,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME endpoint.
+type AcmeEndpoint_SDK struct {
+	AcmeEndpointARN       *string `json:"acmeEndpointARN,omitempty"`
+	AuthorizationBehavior *string `json:"authorizationBehavior,omitempty"`
+	// Defines the certificate authority to use for an ACME endpoint.
+	CertificateAuthority *CertificateAuthority `json:"certificateAuthority,omitempty"`
+	CertificateTags      []*Tag                `json:"certificateTags,omitempty"`
+	Contact              *string               `json:"contact,omitempty"`
+	CreatedAt            *metav1.Time          `json:"createdAt,omitempty"`
+	EndpointURL          *string               `json:"endpointURL,omitempty"`
+	FailureReason        *string               `json:"failureReason,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains summary information about an ACME external account binding.
+type AcmeExternalAccountBindingSummary struct {
+	AcmeEndpointARN               *string      `json:"acmeEndpointARN,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt                     *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt                    *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt                     *metav1.Time `json:"revokedAt,omitempty"`
+	RoleARN                       *string      `json:"roleARN,omitempty"`
+	UpdatedAt                     *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME external account binding.
+type AcmeExternalAccountBinding_SDK struct {
+	AcmeEndpointARN               *string      `json:"acmeEndpointARN,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt                     *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt                    *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt                     *metav1.Time `json:"revokedAt,omitempty"`
+	RoleARN                       *string      `json:"roleARN,omitempty"`
+	UpdatedAt                     *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Defines the certificate authority to use for an ACME endpoint.
+type CertificateAuthority struct {
+	// Configuration for a public certificate authority.
+	PublicCertificateAuthority *PublicCertificateAuthority `json:"publicCertificateAuthority,omitempty"`
 }
 
 // Contains metadata about an ACM certificate. This structure is returned in
@@ -202,9 +282,19 @@ type CustomAttribute struct {
 
 // DNS prevalidation details including the resource record for validation.
 type DNSPrevalidationDetails struct {
+	// Specifies the scope of domain validation.
+	DomainScope  *DomainScope `json:"domainScope,omitempty"`
+	HostedZoneID *string      `json:"hostedZoneID,omitempty"`
 	// Contains a DNS record value that you can use to validate ownership or control
 	// of a domain. This is used by the DescribeCertificate action.
 	ResourceRecord *ResourceRecord `json:"resourceRecord,omitempty"`
+}
+
+// DNS prevalidation options for domain validation.
+type DNSPrevalidationOptions struct {
+	// Specifies the scope of domain validation.
+	DomainScope  *DomainScope `json:"domainScope,omitempty"`
+	HostedZoneID *string      `json:"hostedZoneID,omitempty"`
 }
 
 // Contains X.500 distinguished name information.
@@ -223,6 +313,13 @@ type DistinguishedName struct {
 	State                      *string `json:"state,omitempty"`
 	Surname                    *string `json:"surname,omitempty"`
 	Title                      *string `json:"title,omitempty"`
+}
+
+// Specifies the scope of domain validation.
+type DomainScope struct {
+	ExactDomain *string `json:"exactDomain,omitempty"`
+	Subdomains  *string `json:"subdomains,omitempty"`
+	Wildcards   *string `json:"wildcards,omitempty"`
 }
 
 // Contains information about the validation of each domain name in the certificate.
@@ -248,6 +345,12 @@ type DomainValidationOption struct {
 	ValidationDomain *string `json:"validationDomain,omitempty"`
 }
 
+// Specifies an expiration configuration.
+type Expiration struct {
+	Type  *string `json:"type_,omitempty"`
+	Value *int64  `json:"value,omitempty"`
+}
+
 // The Extended Key Usage X.509 v3 extension defines one or more purposes for
 // which the public key can be used. This is in addition to or in place of the
 // basic purposes specified by the Key Usage extension.
@@ -259,6 +362,7 @@ type ExtendedKeyUsage struct {
 // Contains details about a failure.
 type FailureDetails struct {
 	Message *string `json:"message,omitempty"`
+	Reason  *string `json:"reason,omitempty"`
 }
 
 // This structure can be used in the ListCertificates action to filter the output
@@ -301,6 +405,23 @@ type KeyUsage struct {
 type OtherName struct {
 	ObjectIdentifier *string `json:"objectIdentifier,omitempty"`
 	Value            *string `json:"value,omitempty"`
+}
+
+// Contains details about the prevalidation configuration.
+type PrevalidationDetails struct {
+	// DNS prevalidation details including the resource record for validation.
+	DNSPrevalidation *DNSPrevalidationDetails `json:"dnsPrevalidation,omitempty"`
+}
+
+// Specifies prevalidation options for domain validation.
+type PrevalidationOptions struct {
+	// DNS prevalidation options for domain validation.
+	DNSPrevalidation *DNSPrevalidationOptions `json:"dnsPrevalidation,omitempty"`
+}
+
+// Configuration for a public certificate authority.
+type PublicCertificateAuthority struct {
+	AllowedKeyAlgorithms []*string `json:"allowedKeyAlgorithms,omitempty"`
 }
 
 // Contains information about the status of ACM's managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)

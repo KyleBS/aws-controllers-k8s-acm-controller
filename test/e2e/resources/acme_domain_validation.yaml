@@ -1,0 +1,16 @@
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeDomainValidation
+metadata:
+  name: $ACME_DOMAIN_VALIDATION_NAME
+spec:
+  acmeEndpointARN: $ACME_ENDPOINT_ARN
+  domainName: $DOMAIN_NAME
+  prevalidationOptions:
+    dnsPrevalidation:
+      domainScope:
+        exactDomain: ENABLED
+        subdomains: ENABLED
+        wildcards: ENABLED
+  tags:
+  - key: environment
+    value: dev

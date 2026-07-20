@@ -83,6 +83,82 @@ spec:
 ```
 If you are issuing a privately trusted certificate, please also consider using this cert-manager plugin: https://github.com/cert-manager/aws-privateca-issuer/.
 
+## ACME Resources
+
+This controller also manages ACME (Automatic Certificate Management Environment) resources for ACM. ACME enables standards-based certificate automation using any ACME-compatible client (cert-manager, Certbot, acme.sh, etc.).
+
+### AcmeEndpoint
+
+Creates a managed ACME server endpoint with a unique URL for certificate automation.
+
+```yaml
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeEndpoint
+metadata:
+  name: my-acme-endpoint
+spec:
+  authorizationBehavior: PRE_APPROVED
+  certificateAuthority:
+    publicCertificateAuthority: {}
+  contact: NOT_REQUIRED
+```
+
+After creation, `status.endpointURL` contains the ACME directory URL (e.g., `https://acm-acme-enroll.us-east-1.api.aws/<id>/directory`).
+
+### AcmeDomainValidation
+
+Authorizes an ACME endpoint to issue certificates for specific domain names.
+
+```yaml
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeDomainValidation
+metadata:
+  name: my-domain-validation
+spec:
+  acmeEndpointARN: arn:aws:acm:us-east-1:123456789012:acme-endpoint/abc-123
+  domainName: example.com
+  prevalidationOptions:
+    dnsPrevalidation:
+      hostedZoneId: Z0123456789ABC
+      domainScope:
+        exactDomain: ENABLED
+        subdomains: ENABLED
+        wildcards: ENABLED
+```
+
+### AcmeExternalAccountBinding
+
+Creates EAB credentials that authorize ACME clients to register accounts with the endpoint.
+
+You must create the target Secret before creating the resource — the controller
+populates an existing Secret rather than creating one (the same pattern as the
+`Certificate` resource's `exportTo` field).
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-eab-credentials
+  namespace: default
+type: Opaque
+---
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeExternalAccountBinding
+metadata:
+  name: my-eab
+spec:
+  acmeEndpointARN: arn:aws:acm:us-east-1:123456789012:acme-endpoint/abc-123
+  roleARN: arn:aws:iam::123456789012:role/AcmeAccountRole
+  credentialsOutput:
+    namespace: default
+    name: my-eab-credentials
+    key: macKey
+```
+
+After creation, the controller writes the sensitive `macKey` into the specified Kubernetes Secret under the given `key` (defaulting to `macKey` if unset), and also writes the `keyId` under a fixed `keyId` key. The Secret must already exist. If `namespace` is omitted, the resource's namespace is used.
+
+The non-sensitive key identifier is also surfaced in `status.keyID`, so ACME clients can reference it directly without reading the Secret. The sensitive `macKey` is only ever written to the Secret.
+
 ## Contributing
 
 We welcome community contributions and pull requests.

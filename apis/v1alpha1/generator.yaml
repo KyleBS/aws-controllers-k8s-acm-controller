@@ -1,11 +1,10 @@
 ignore:
-  resource_names:
-    - AcmeEndpoint
-    - AcmeExternalAccountBinding
-    - AcmeDomainValidation
   field_paths:
     - "RequestCertificateInput.IdempotencyToken"
     - "RequestCertificateInput.ValidationMethod"
+    - "CreateAcmeEndpointInput.IdempotencyToken"
+    - "CreateAcmeExternalAccountBindingInput.IdempotencyToken"
+    - "CreateAcmeDomainValidationInput.IdempotencyToken"
 operations:
   RequestCertificate:
     resource_name: Certificate
@@ -18,6 +17,41 @@ operations:
   UpdateCertificateOptions:
     resource_name: Certificate
     operation_type: UPDATE
+  CreateAcmeEndpoint:
+    resource_name: AcmeEndpoint
+    operation_type: CREATE
+  DescribeAcmeEndpoint:
+    resource_name: AcmeEndpoint
+    operation_type: READ_ONE
+  UpdateAcmeEndpoint:
+    resource_name: AcmeEndpoint
+    operation_type: UPDATE
+  DeleteAcmeEndpoint:
+    resource_name: AcmeEndpoint
+    operation_type: DELETE
+  # ACME External Account Binding operations
+  CreateAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
+    operation_type: CREATE
+  DescribeAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
+    operation_type: READ_ONE
+  DeleteAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
+    operation_type: DELETE
+  # ACME Domain Validation operations
+  CreateAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: CREATE
+  DescribeAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: READ_ONE
+  UpdateAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: UPDATE
+  DeleteAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: DELETE
 resources:
   Certificate:
     hooks:
@@ -214,3 +248,202 @@ resources:
         is_immutable: true
         compare:
           is_ignored: true
+
+  AcmeEndpoint:
+    hooks:
+      sdk_update_pre_build_request:
+        template_path: hooks/acme_endpoint/sdk_update_pre_build_request.go.tpl
+      sdk_read_one_pre_set_output:
+        template_path: hooks/acme_endpoint/sdk_read_one_pre_set_output.go.tpl
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - InvalidParameterException
+        - InvalidArnException
+        - LimitExceededException
+        - InvalidTagException
+        - TagPolicyException
+        - TooManyTagsException
+    reconcile:
+      requeue_on_success_seconds: 30
+    fields:
+      AuthorizationBehavior:
+        is_immutable: true
+      CertificateAuthority:
+        is_immutable: true
+        compare:
+          is_ignored: true
+      # The Create response only returns the ARN. All other fields come from
+      # DescribeAcmeEndpoint which returns an AcmeEndpoint struct.
+      AcmeEndpointArn:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.AcmeEndpointArn
+      EndpointUrl:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.EndpointUrl
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.Status
+      FailureReason:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.FailureReason
+      CreatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.CreatedAt
+      UpdatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeEndpoint
+          path: AcmeEndpoint.UpdatedAt
+
+  AcmeExternalAccountBinding:
+    hooks:
+      sdk_create_post_set_output:
+        template_path: hooks/acme_external_account_binding/sdk_create_post_set_output.go.tpl
+      sdk_read_one_pre_set_output:
+        template_path: hooks/acme_external_account_binding/sdk_read_one_pre_set_output.go.tpl
+    # The external account binding has no service-side update operation, so the
+    # generated sdkUpdate is a custom method that reconciles only the tag set
+    # via the standardized TagResource/UntagResource API.
+    update_operation:
+      custom_method_name: customUpdateAcmeExternalAccountBinding
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - InvalidParameterException
+        - InvalidArnException
+        - LimitExceededException
+        - InvalidTagException
+        - TagPolicyException
+        - TooManyTagsException
+    reconcile:
+      requeue_on_success_seconds: 60
+    fields:
+      AcmeEndpointArn:
+        is_immutable: true
+        references:
+          resource: AcmeEndpoint
+          path: Status.ACKResourceMetadata.ARN
+      RoleArn:
+        is_immutable: true
+      # Secret where EAB credentials (keyId, macKey) are written. Uses the same
+      # SecretKeyReference pattern as Certificate.exportTo so users can target a
+      # Secret in any namespace. The Secret must already exist — the controller
+      # populates it (WriteToSecret patches, it does not create).
+      CredentialsOutput:
+        type: "bytes"
+        is_secret: true
+        is_immutable: true
+        compare:
+          is_ignored: true
+      # Status fields from DescribeAcmeExternalAccountBinding
+      # KeyID is the EAB key identifier (not sensitive; pairs with the macKey
+      # stored in the Secret). It is populated by the create hook from the
+      # GetAcmeExternalAccountBindingCredentials response so ACME clients can
+      # read it from status when registering an account.
+      KeyID:
+        is_read_only: true
+        type: string
+      AcmeExternalAccountBindingArn:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.AcmeExternalAccountBindingArn
+      CreatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.CreatedAt
+      ExpiresAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.ExpiresAt
+      LastUsedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.LastUsedAt
+      RevokedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.RevokedAt
+      UpdatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.UpdatedAt
+
+  AcmeDomainValidation:
+    hooks:
+      sdk_update_pre_build_request:
+        template_path: hooks/acme_domain_validation/sdk_update_pre_build_request.go.tpl
+      sdk_read_one_pre_set_output:
+        template_path: hooks/acme_domain_validation/sdk_read_one_pre_set_output.go.tpl
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - InvalidParameterException
+        - InvalidArnException
+        - LimitExceededException
+        - InvalidTagException
+        - TagPolicyException
+        - TooManyTagsException
+    reconcile:
+      requeue_on_success_seconds: 30
+    fields:
+      AcmeEndpointArn:
+        is_immutable: true
+        references:
+          resource: AcmeEndpoint
+          path: Status.ACKResourceMetadata.ARN
+      DomainName:
+        is_immutable: true
+      # Status fields from DescribeAcmeDomainValidation
+      AcmeDomainValidationArn:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.AcmeDomainValidationArn
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.Status
+      PrevalidationType:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.PrevalidationType
+      FailureDetails:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.FailureDetails
+      CreatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.CreatedAt
+      UpdatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.UpdatedAt

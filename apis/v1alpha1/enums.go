@@ -50,22 +50,22 @@ const (
 	AcmeDomainValidationFailureReason_TIMED_OUT             AcmeDomainValidationFailureReason = "TIMED_OUT"
 )
 
-type AcmeDomainValidationStatus string
+type AcmeDomainValidationStatus_SDK string
 
 const (
-	AcmeDomainValidationStatus_DELETING   AcmeDomainValidationStatus = "DELETING"
-	AcmeDomainValidationStatus_INVALID    AcmeDomainValidationStatus = "INVALID"
-	AcmeDomainValidationStatus_VALID      AcmeDomainValidationStatus = "VALID"
-	AcmeDomainValidationStatus_VALIDATING AcmeDomainValidationStatus = "VALIDATING"
+	AcmeDomainValidationStatus_SDK_DELETING   AcmeDomainValidationStatus_SDK = "DELETING"
+	AcmeDomainValidationStatus_SDK_INVALID    AcmeDomainValidationStatus_SDK = "INVALID"
+	AcmeDomainValidationStatus_SDK_VALID      AcmeDomainValidationStatus_SDK = "VALID"
+	AcmeDomainValidationStatus_SDK_VALIDATING AcmeDomainValidationStatus_SDK = "VALIDATING"
 )
 
-type AcmeEndpointStatus string
+type AcmeEndpointStatus_SDK string
 
 const (
-	AcmeEndpointStatus_ACTIVE   AcmeEndpointStatus = "ACTIVE"
-	AcmeEndpointStatus_CREATING AcmeEndpointStatus = "CREATING"
-	AcmeEndpointStatus_DELETING AcmeEndpointStatus = "DELETING"
-	AcmeEndpointStatus_FAILED   AcmeEndpointStatus = "FAILED"
+	AcmeEndpointStatus_SDK_ACTIVE   AcmeEndpointStatus_SDK = "ACTIVE"
+	AcmeEndpointStatus_SDK_CREATING AcmeEndpointStatus_SDK = "CREATING"
+	AcmeEndpointStatus_SDK_DELETING AcmeEndpointStatus_SDK = "DELETING"
+	AcmeEndpointStatus_SDK_FAILED   AcmeEndpointStatus_SDK = "FAILED"
 )
 
 type CertificateExport string

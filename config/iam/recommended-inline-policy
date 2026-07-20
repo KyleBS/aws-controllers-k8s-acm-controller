@@ -26,6 +26,36 @@
                 "acm-pca:ListPermissions"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "ACMACMEPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "acm:CreateAcmeEndpoint",
+                "acm:DescribeAcmeEndpoint",
+                "acm:UpdateAcmeEndpoint",
+                "acm:DeleteAcmeEndpoint",
+                "acm:CreateAcmeExternalAccountBinding",
+                "acm:DescribeAcmeExternalAccountBinding",
+                "acm:DeleteAcmeExternalAccountBinding",
+                "acm:GetAcmeExternalAccountBindingCredentials",
+                "acm:CreateAcmeDomainValidation",
+                "acm:DescribeAcmeDomainValidation",
+                "acm:UpdateAcmeDomainValidation",
+                "acm:DeleteAcmeDomainValidation"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ACMACMEPassRole",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "acm-acme.amazonaws.com"
+                }
+            }
         }
     ]
 }

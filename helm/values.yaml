@@ -150,6 +150,9 @@ reconcile:
   # If empty, all resources will be reconciled.
   # If specified, only the listed resource kinds will be reconciled.
   resources:
+    - AcmeDomainValidation
+    - AcmeEndpoint
+    - AcmeExternalAccountBinding
     - Certificate
 
 serviceAccount:
