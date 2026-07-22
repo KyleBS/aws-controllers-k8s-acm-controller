@@ -15,22 +15,28 @@
 """
 
 import time
+import os
 import pytest
 
 from typing import Dict, Tuple
+from kubernetes import client
 from acktest.k8s import resource as k8s
 from acktest.resources import random_suffix_name
 from acktest import tags
 from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
+from e2e.bootstrap_resources import get_bootstrap_resources
 
 ACME_ENDPOINT_PLURAL = 'acmeendpoints'
 ACME_DOMAIN_VALIDATION_PLURAL = 'acmedomainvalidations'
+ACME_EAB_PLURAL = 'acmeexternalaccountbindings'
 
 # AcmeEndpoint goes CREATING -> ACTIVE, requeue is 30s
 CREATE_ENDPOINT_WAIT_SECONDS = 35
 # Domain validation goes VALIDATING -> VALID/INVALID, can take 60s+
 CREATE_DOMAIN_VALIDATION_WAIT_SECONDS = 65
+# EAB creation is near-instant, requeue is 60s
+CREATE_EAB_WAIT_SECONDS = 65
 # Time to allow an update (tag sync / field patch) to reconcile
 UPDATE_WAIT_SECONDS = 35
 
@@ -281,6 +287,142 @@ class TestAcmeDomainValidation:
             .get("DnsPrevalidation", {}).get("DomainScope", {})
         assert scope.get("Wildcards") == "DISABLED", \
             f"expected wildcards DISABLED on AWS, got {scope}"
+
+        aws_tags = _aws_resource_tags(acm_client, arn)
+        tags.assert_equal_without_ack_tags(
+            expected={"team": "platform"}, actual=aws_tags,
+        )
+
+
+def _eab_role_arn() -> str:
+    """Returns the EAB issuance role ARN from the bootstrapped resources,
+    falling back to the ACME_ROLE_ARN environment variable for local runs."""
+    env_arn = os.environ.get("ACME_ROLE_ARN")
+    if env_arn:
+        return env_arn
+    return get_bootstrap_resources().EABRole.arn
+
+
+@pytest.fixture
+def acme_endpoint_with_eab(request, acme_endpoint) -> Tuple[k8s.CustomResourceReference, Dict, str]:
+    """Creates an AcmeEndpoint and then an EAB for it."""
+    (endpoint_ref, endpoint_cr) = acme_endpoint
+
+    # Re-read endpoint to get ARN
+    endpoint_cr = k8s.get_resource(endpoint_ref)
+    endpoint_arn = endpoint_cr["status"]["ackResourceMetadata"]["arn"]
+
+    eab_name = random_suffix_name("acme-eab", 20)
+    secret_name = eab_name + "-credentials"
+
+    # The controller populates an existing Secret with the EAB credentials; it
+    # does not create one. Users are expected to create the Secret first (same
+    # pattern as the Certificate exportTo field).
+    v1 = client.CoreV1Api(k8s._get_k8s_api_client())
+    secret_body = client.V1Secret(
+        metadata=client.V1ObjectMeta(name=secret_name, namespace="default"),
+        type="Opaque",
+    )
+    v1.create_namespaced_secret("default", secret_body)
+
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements['ACME_EAB_NAME'] = eab_name
+    replacements['ACME_EAB_SECRET_NAME'] = secret_name
+    replacements['ACME_ENDPOINT_ARN'] = endpoint_arn
+    replacements['ROLE_ARN'] = _eab_role_arn()
+
+    resource_data = load_resource(
+        "acme_external_account_binding",
+        additional_replacements=replacements,
+    )
+
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, ACME_EAB_PLURAL,
+        eab_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    cr = k8s.wait_resource_consumed_by_controller(ref)
+
+    assert cr is not None
+    assert k8s.get_resource_exists(ref)
+
+    time.sleep(CREATE_EAB_WAIT_SECONDS)
+
+    yield (ref, cr, endpoint_arn)
+
+    try:
+        _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+        assert deleted
+    except:
+        pass
+
+    try:
+        v1.delete_namespaced_secret(secret_name, "default")
+    except:
+        pass
+
+
+@service_marker
+class TestAcmeExternalAccountBinding:
+    def test_create_delete_and_credentials_secret(self, acme_endpoint_with_eab, acm_client):
+        (ref, cr, endpoint_arn) = acme_endpoint_with_eab
+
+        # Re-read to get updated status
+        cr = k8s.get_resource(ref)
+        assert cr is not None
+
+        # Verify ARN is set
+        arn = cr["status"]["ackResourceMetadata"]["arn"]
+        assert arn is not None
+        assert "acme-external-account-binding" in arn
+
+        # Verify the key identifier is surfaced in status for ACME clients
+        key_id_status = cr["status"].get("keyID")
+        assert key_id_status is not None, "status.keyID should be set"
+        assert len(key_id_status) > 0, "status.keyID should not be empty"
+
+        # Verify the actual K8s Secret was populated with the credentials.
+        # The sensitive macKey is written under the user-specified key, and the
+        # keyId is written under a fixed "keyId" key.
+        secret_name = cr["spec"]["credentialsOutput"]["name"]
+        secret_namespace = cr["spec"]["credentialsOutput"].get("namespace", "default")
+        mac_key_field = cr["spec"]["credentialsOutput"]["key"]
+
+        v1 = client.CoreV1Api(k8s._get_k8s_api_client())
+        secret = v1.read_namespaced_secret(secret_name, secret_namespace)
+        assert secret is not None, f"Secret {secret_name} should exist"
+        assert "keyId" in secret.data, "Secret should contain keyId"
+        assert mac_key_field in secret.data, f"Secret should contain macKey under '{mac_key_field}'"
+        assert len(secret.data["keyId"]) > 0
+        assert len(secret.data[mac_key_field]) > 0
+
+        # Verify against AWS (the source of truth) that the EAB exists and the
+        # create-time tag landed.
+        aws = acm_client.describe_acme_external_account_binding(
+            AcmeExternalAccountBindingArn=arn,
+        )["ExternalAccountBinding"]
+        assert aws["AcmeExternalAccountBindingArn"] == arn
+        aws_tags = _aws_resource_tags(acm_client, arn)
+        tags.assert_equal_without_ack_tags(
+            expected={"environment": "dev"}, actual=aws_tags,
+        )
+
+    def test_update_tags(self, acme_endpoint_with_eab, acm_client):
+        (ref, cr, endpoint_arn) = acme_endpoint_with_eab
+        cr = k8s.get_resource(ref)
+        arn = cr["status"]["ackResourceMetadata"]["arn"]
+
+        # The EAB has no service-side update operation; its sdkUpdate is a
+        # custom method that reconciles only tags via TagResource/UntagResource.
+        # Rewrite the tag set (remove "environment", add "team") and verify the
+        # change reaches AWS.
+        k8s.patch_custom_resource(
+            ref, {"spec": {"tags": [{"key": "team", "value": "platform"}]}},
+        )
+        time.sleep(UPDATE_WAIT_SECONDS)
+
+        # The update should reconcile fully and return to a synced state.
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=3)
 
         aws_tags = _aws_resource_tags(acm_client, arn)
         tags.assert_equal_without_ack_tags(

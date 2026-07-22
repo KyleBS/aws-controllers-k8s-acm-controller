@@ -42,6 +42,7 @@ import (
 
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_domain_validation"
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_endpoint"
+	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_external_account_binding"
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/certificate"
 
 	"github.com/aws-controllers-k8s/acm-controller/pkg/version"

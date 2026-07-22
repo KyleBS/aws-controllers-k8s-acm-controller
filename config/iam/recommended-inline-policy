@@ -24,7 +24,11 @@
                 "acm:DeleteAcmeDomainValidation",
                 "acm:TagResource",
                 "acm:UntagResource",
-                "acm:ListTagsForResource"
+                "acm:ListTagsForResource",
+                "acm:CreateAcmeExternalAccountBinding",
+                "acm:DescribeAcmeExternalAccountBinding",
+                "acm:DeleteAcmeExternalAccountBinding",
+                "acm:GetAcmeExternalAccountBindingCredentials"
             ],
             "Resource": "*"
         },
@@ -37,6 +41,17 @@
                 "acm-pca:ListPermissions"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "ACMACMEPassRole",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "acm-acme.amazonaws.com"
+                }
+            }
         }
     ]
 }

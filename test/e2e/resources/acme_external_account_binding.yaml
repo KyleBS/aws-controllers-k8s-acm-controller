@@ -1,0 +1,14 @@
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeExternalAccountBinding
+metadata:
+  name: $ACME_EAB_NAME
+spec:
+  acmeEndpointARN: $ACME_ENDPOINT_ARN
+  roleARN: $ROLE_ARN
+  credentialsOutput:
+    namespace: default
+    name: $ACME_EAB_SECRET_NAME
+    key: macKey
+  tags:
+  - key: environment
+    value: dev

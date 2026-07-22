@@ -143,3 +143,52 @@ spec:
         wildcards: ENABLED
 ```
 
+### AcmeExternalAccountBinding
+
+Creates EAB credentials that authorize ACME clients to register accounts with the endpoint.
+
+You must create the target Secret before creating the resource — the controller
+populates an existing Secret rather than creating one (the same pattern as the
+`Certificate` resource's `exportTo` field).
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-eab-credentials
+  namespace: default
+type: Opaque
+---
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeExternalAccountBinding
+metadata:
+  name: my-eab
+spec:
+  acmeEndpointARN: arn:aws:acm:us-east-1:123456789012:acme-endpoint/abc-123
+  roleARN: arn:aws:iam::123456789012:role/AcmeAccountRole
+  credentialsOutput:
+    namespace: default
+    name: my-eab-credentials
+    key: macKey
+```
+
+After creation, the controller writes the sensitive `macKey` into the specified Kubernetes Secret under the given `key` (defaulting to `macKey` if unset), and also writes the `keyId` under a fixed `keyId` key. The Secret must already exist. If `namespace` is omitted, the resource's namespace is used.
+
+The non-sensitive key identifier is also surfaced in `status.keyID`, so ACME clients can reference it directly without reading the Secret. The sensitive `macKey` is only ever written to the Secret.
+
+## Contributing
+
+We welcome community contributions and pull requests.
+
+See our [contribution guide](/CONTRIBUTING.md) for more information on how to
+report issues, set up a development environment, and submit code.
+
+We adhere to the [Amazon Open Source Code of Conduct][coc].
+
+You can also learn more about our [Governance](/GOVERNANCE.md) structure.
+
+[coc]: https://aws.github.io/code-of-conduct
+
+## License
+
+This project is [licensed](/LICENSE) under the Apache-2.0 License.
