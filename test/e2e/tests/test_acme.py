@@ -11,7 +11,7 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-"""Integration tests for the ACM AcmeEndpoint resource
+"""Integration tests for the ACM ACME resources
 """
 
 import time
@@ -25,9 +25,12 @@ from e2e import service_marker, CRD_GROUP, CRD_VERSION, load_resource
 from e2e.replacement_values import REPLACEMENT_VALUES
 
 ACME_ENDPOINT_PLURAL = 'acmeendpoints'
+ACME_DOMAIN_VALIDATION_PLURAL = 'acmedomainvalidations'
 
 # AcmeEndpoint goes CREATING -> ACTIVE, requeue is 30s
 CREATE_ENDPOINT_WAIT_SECONDS = 35
+# Domain validation goes VALIDATING -> VALID/INVALID, can take 60s+
+CREATE_DOMAIN_VALIDATION_WAIT_SECONDS = 65
 # Time to allow an update (tag sync / field patch) to reconcile
 UPDATE_WAIT_SECONDS = 35
 
@@ -158,6 +161,128 @@ class TestAcmeEndpoint:
         # removed. assert_equal_without_ack_tags ignores ACK's own
         # services.k8s.aws/* tags and asserts the user tag set matches exactly
         # (mirrors the tag assertions in test_certificate.py).
+        tags.assert_equal_without_ack_tags(
+            expected={"team": "platform"}, actual=aws_tags,
+        )
+
+
+@pytest.fixture
+def acme_domain_validation(request, acme_endpoint) -> Tuple[k8s.CustomResourceReference, Dict]:
+    """Creates an AcmeEndpoint and then a DomainValidation for it."""
+    (endpoint_ref, endpoint_cr) = acme_endpoint
+
+    # Re-read endpoint to get ARN
+    endpoint_cr = k8s.get_resource(endpoint_ref)
+    endpoint_arn = endpoint_cr["status"]["ackResourceMetadata"]["arn"]
+
+    validation_name = random_suffix_name("acme-dv", 20)
+
+    replacements = REPLACEMENT_VALUES.copy()
+    replacements['ACME_DOMAIN_VALIDATION_NAME'] = validation_name
+    replacements['ACME_ENDPOINT_ARN'] = endpoint_arn
+    replacements['DOMAIN_NAME'] = 'example.com'
+
+    resource_data = load_resource(
+        "acme_domain_validation",
+        additional_replacements=replacements,
+    )
+
+    ref = k8s.CustomResourceReference(
+        CRD_GROUP, CRD_VERSION, ACME_DOMAIN_VALIDATION_PLURAL,
+        validation_name, namespace="default",
+    )
+    k8s.create_custom_resource(ref, resource_data)
+    cr = k8s.wait_resource_consumed_by_controller(ref)
+
+    assert cr is not None
+    assert k8s.get_resource_exists(ref)
+
+    time.sleep(CREATE_DOMAIN_VALIDATION_WAIT_SECONDS)
+
+    yield (ref, cr)
+
+    try:
+        _, deleted = k8s.delete_custom_resource(ref, 3, 10)
+        assert deleted
+    except:
+        pass
+
+
+@service_marker
+class TestAcmeDomainValidation:
+    def test_create_delete(self, acme_domain_validation, acm_client):
+        (ref, cr) = acme_domain_validation
+
+        # Poll for the resource to become synced (settled VALID/INVALID per
+        # the synced.when condition) to avoid timing inconsistencies.
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=3)
+
+        # Re-read to get updated status
+        cr = k8s.get_resource(ref)
+        assert cr is not None
+
+        # After the synced wait the validation has settled; example.com
+        # cannot be validated so it lands INVALID.
+        status = cr["status"].get("status")
+        assert status in ("INVALID", "VALID"), \
+            f"Expected settled status, got {status}"
+
+        # Verify ARN is set
+        arn = cr["status"]["ackResourceMetadata"]["arn"]
+        assert arn is not None
+
+        # Verify against AWS (the source of truth) that the domain validation
+        # exists, its status agrees, and the create-time tag landed.
+        aws = acm_client.describe_acme_domain_validation(
+            AcmeDomainValidationArn=arn,
+        )["AcmeDomainValidation"]
+        assert aws["Status"] == status, \
+            f"AWS status {aws['Status']} != CR status {status}"
+        aws_tags = _aws_resource_tags(acm_client, arn)
+        assert aws_tags is not None
+        tags.assert_equal_without_ack_tags(
+            expected={"environment": "dev"}, actual=aws_tags,
+        )
+
+    def test_update(self, acme_domain_validation, acm_client):
+        (ref, cr) = acme_domain_validation
+        cr = k8s.get_resource(ref)
+        arn = cr["status"]["ackResourceMetadata"]["arn"]
+
+        # Update the mutable prevalidationOptions (disable wildcards) to
+        # exercise UpdateAcmeDomainValidation, and rewrite the tag set
+        # (remove "environment", add "team") to exercise tag sync.
+        updates = {
+            "spec": {
+                "prevalidationOptions": {
+                    "dnsPrevalidation": {
+                        "domainScope": {
+                            "exactDomain": "ENABLED",
+                            "subdomains": "ENABLED",
+                            "wildcards": "DISABLED",
+                        },
+                    },
+                },
+                "tags": [{"key": "team", "value": "platform"}],
+            }
+        }
+        k8s.patch_custom_resource(ref, updates)
+        time.sleep(UPDATE_WAIT_SECONDS)
+
+        # The update should reconcile fully and return to a synced state.
+        assert k8s.wait_on_condition(ref, "ACK.ResourceSynced", "True", wait_periods=3)
+
+        # Verify against AWS. The describe response reports the effective
+        # prevalidation state in PrevalidationDetails.
+        aws = acm_client.describe_acme_domain_validation(
+            AcmeDomainValidationArn=arn,
+        )["AcmeDomainValidation"]
+        scope = aws.get("PrevalidationDetails", {}) \
+            .get("DnsPrevalidation", {}).get("DomainScope", {})
+        assert scope.get("Wildcards") == "DISABLED", \
+            f"expected wildcards DISABLED on AWS, got {scope}"
+
+        aws_tags = _aws_resource_tags(acm_client, arn)
         tags.assert_equal_without_ack_tags(
             expected={"team": "platform"}, actual=aws_tags,
         )

@@ -28,3 +28,18 @@ resources:
         prepend: |
           Whether ACME clients must provide contact information during account registration.
           Valid values: REQUIRED, NOT_REQUIRED.
+  AcmeDomainValidation:
+    fields:
+      AcmeEndpointArn:
+        prepend: |
+          The ARN of the ACME endpoint to validate the domain for.
+      DomainName:
+        prepend: |
+          The domain name to validate. Use DomainScope within PrevalidationOptions
+          to control whether validation applies to the exact domain, subdomains,
+          and/or wildcards.
+      PrevalidationOptions:
+        prepend: |
+          Configuration for domain prevalidation. Specify DnsPrevalidation with a
+          Route 53 HostedZoneId and optional DomainScope (ExactDomain, Subdomains,
+          Wildcards — each ENABLED or DISABLED).
