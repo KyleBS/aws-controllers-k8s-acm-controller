@@ -192,3 +192,11 @@ You can also learn more about our [Governance](/GOVERNANCE.md) structure.
 ## License
 
 This project is [licensed](/LICENSE) under the Apache-2.0 License.
+
+## Development
+
+See [docs/adding-resources.md](docs/adding-resources.md) for the practices
+learned adding the ACME resources: deriving field mutability from the update
+API, handling server-defaulted and non-echoed fields, synced conditions and
+state guards, terminal-code criteria, and the testing requirements including
+the spurious-delta sweep.
