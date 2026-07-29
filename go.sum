@@ -2,6 +2,8 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/aws-controllers-k8s/acmpca-controller v0.0.17 h1:i1YyvDui8LNbwLwkXsr+jVoyCP49+ie4CZq1RRq7Tz0=
 github.com/aws-controllers-k8s/acmpca-controller v0.0.17/go.mod h1:BaLyCLbP5GibqqT4qANmDxAX3CYHatA+dQNFe5fOk+M=
+github.com/aws-controllers-k8s/route53-controller v1.4.4 h1:T7Dvn5qMRA4WbyEew6rMcL++I61M8NfEoFHZsHiPKA4=
+github.com/aws-controllers-k8s/route53-controller v1.4.4/go.mod h1:MljMKAKgGQGMW8yTUB5XwF0x/qHDDV99P+MoFVjN8mw=
 github.com/aws-controllers-k8s/runtime v0.61.0 h1:46ksj9nvW5gx86aB44/zfrZOvJj4G7WWnWf7hj2CcCw=
 github.com/aws-controllers-k8s/runtime v0.61.0/go.mod h1:Ovpk9GCCc/3hekVN6CL0cZhsG41JqSvIb8DXwaEwL34=
 github.com/aws/aws-sdk-go v1.49.6 h1:yNldzF5kzLBRvKlKz1S0bkvc2+04R1kt13KfBWQBfFA=

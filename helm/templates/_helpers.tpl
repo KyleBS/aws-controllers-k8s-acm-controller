@@ -72,6 +72,7 @@ rules:
 - apiGroups:
   - acm.services.k8s.aws
   resources:
+  - acmedomainvalidations
   - acmeendpoints
   - certificates
   verbs:
@@ -85,6 +86,7 @@ rules:
 - apiGroups:
   - acm.services.k8s.aws
   resources:
+  - acmedomainvalidations/status
   - acmeendpoints/status
   - certificates/status
   verbs:
@@ -96,6 +98,14 @@ rules:
   resources:
   - certificateauthorities
   - certificateauthorities/status
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - route53.services.k8s.aws
+  resources:
+  - hostedzones
+  - hostedzones/status
   verbs:
   - get
   - list

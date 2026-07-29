@@ -122,3 +122,24 @@ spec:
 
 After creation, `status.endpointURL` contains the ACME directory URL (e.g., `https://acm-acme-enroll.us-east-1.api.aws/<id>/directory`).
 
+### AcmeDomainValidation
+
+Authorizes an ACME endpoint to issue certificates for specific domain names.
+
+```yaml
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeDomainValidation
+metadata:
+  name: my-domain-validation
+spec:
+  acmeEndpointARN: arn:aws:acm:us-east-1:123456789012:acme-endpoint/abc-123
+  domainName: example.com
+  prevalidationOptions:
+    dnsPrevalidation:
+      hostedZoneId: Z0123456789ABC
+      domainScope:
+        exactDomain: ENABLED
+        subdomains: ENABLED
+        wildcards: ENABLED
+```
+

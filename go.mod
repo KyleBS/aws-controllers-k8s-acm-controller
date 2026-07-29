@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/aws-controllers-k8s/acmpca-controller v0.0.17
+	github.com/aws-controllers-k8s/route53-controller v1.4.4
 	github.com/aws-controllers-k8s/runtime v0.61.0
 	github.com/aws/aws-sdk-go v1.49.6
 	github.com/aws/aws-sdk-go-v2 v1.42.1

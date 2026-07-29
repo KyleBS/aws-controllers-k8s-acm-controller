@@ -1,11 +1,11 @@
 ignore:
   resource_names:
     - AcmeExternalAccountBinding
-    - AcmeDomainValidation
   field_paths:
     - "RequestCertificateInput.IdempotencyToken"
     - "RequestCertificateInput.ValidationMethod"
     - "CreateAcmeEndpointInput.IdempotencyToken"
+    - "CreateAcmeDomainValidationInput.IdempotencyToken"
 operations:
   RequestCertificate:
     resource_name: Certificate
@@ -31,6 +31,18 @@ operations:
     resource_name: AcmeEndpoint
     operation_type: DELETE
   # ACME External Account Binding operations
+  CreateAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: CREATE
+  DescribeAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: READ_ONE
+  UpdateAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: UPDATE
+  DeleteAcmeDomainValidation:
+    resource_name: AcmeDomainValidation
+    operation_type: DELETE
 resources:
   Certificate:
     hooks:
@@ -293,3 +305,91 @@ resources:
           operation: DescribeAcmeEndpoint
           path: AcmeEndpoint.UpdatedAt
 
+  AcmeDomainValidation:
+    hooks:
+      sdk_update_pre_build_request:
+        template_path: hooks/acme_domain_validation/sdk_update_pre_build_request.go.tpl
+      sdk_read_one_post_set_output:
+        template_path: hooks/acme_domain_validation/sdk_read_one_post_set_output.go.tpl
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - InvalidParameterException
+        - InvalidArnException
+        - InvalidTagException
+        - TagPolicyException
+        - TooManyTagsException
+    # Treat a domain validation as a point-in-time health check, not a resource
+    # with a terminal state:
+    #   VALID    -> Synced=True, re-checked at the controller resync period
+    #               (10h by default, tunable per-kind with
+    #               --reconcile-resource-resync-seconds). A healthy domain going
+    #               INVALID later is picked up then; that lag is acceptable.
+    #   INVALID  -> Synced=False, so the ACK runtime re-checks every 30s
+    #               (requeue.DefaultRequeueAfterDuration) and a customer fixing
+    #               their DNS configuration is reflected quickly.
+    # This mirrors how the EKS controller handles an Addon's DEGRADED state:
+    # only ACTIVE counts as synced, and DEGRADED is deliberately NOT terminal.
+    # NOTE: requeue_on_success_seconds is intentionally NOT set — it takes
+    # precedence over the resync period for the Synced=True path
+    # (runtime getResyncPeriod), which would pin VALID to the same fast poll and
+    # make the asymmetry a no-op.
+    synced:
+      when:
+        - path: Status.Status
+          in:
+            - VALID
+    tags:
+      ignore: false
+    fields:
+      PrevalidationOptions.DNSPrevalidation.HostedZoneID:
+        references:
+          resource: HostedZone
+          service_name: route53
+          path: Status.ID
+      AcmeEndpointArn:
+        is_immutable: true
+        references:
+          resource: AcmeEndpoint
+          path: Status.ACKResourceMetadata.ARN
+      DomainName:
+        is_immutable: true
+      PrevalidationOptions.DNSPrevalidation.DomainScope.ExactDomain:
+        late_initialize: {}
+      PrevalidationOptions.DNSPrevalidation.DomainScope.Subdomains:
+        late_initialize: {}
+      PrevalidationOptions.DNSPrevalidation.DomainScope.Wildcards:
+        late_initialize: {}
+      # Status fields from DescribeAcmeDomainValidation
+      Status:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.Status
+      PrevalidationType:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.PrevalidationType
+      PrevalidationDetails:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.PrevalidationDetails
+      FailureDetails:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.FailureDetails
+      CreatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.CreatedAt
+      UpdatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeDomainValidation
+          path: AcmeDomainValidation.UpdatedAt

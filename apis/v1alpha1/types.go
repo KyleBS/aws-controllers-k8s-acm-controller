@@ -79,18 +79,34 @@ type AcmeAccountSummary struct {
 	PublicKeyThumbprint *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
-// Contains detailed information about an ACME domain validation.
-type AcmeDomainValidation struct {
-	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
-	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
-	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
-}
-
 // Contains summary information about an ACME domain validation.
 type AcmeDomainValidationSummary struct {
-	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
-	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
-	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
+	AcmeDomainValidationARN *string      `json:"acmeDomainValidationARN,omitempty"`
+	AcmeEndpointARN         *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt               *metav1.Time `json:"createdAt,omitempty"`
+	DomainName              *string      `json:"domainName,omitempty"`
+	// Contains details about a failure.
+	FailureDetails *FailureDetails `json:"failureDetails,omitempty"`
+	// Contains details about the prevalidation configuration.
+	PrevalidationDetails *PrevalidationDetails `json:"prevalidationDetails,omitempty"`
+	PrevalidationType    *string               `json:"prevalidationType,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME domain validation.
+type AcmeDomainValidation_SDK struct {
+	AcmeDomainValidationARN *string      `json:"acmeDomainValidationARN,omitempty"`
+	AcmeEndpointARN         *string      `json:"acmeEndpointARN,omitempty"`
+	CreatedAt               *metav1.Time `json:"createdAt,omitempty"`
+	DomainName              *string      `json:"domainName,omitempty"`
+	// Contains details about a failure.
+	FailureDetails *FailureDetails `json:"failureDetails,omitempty"`
+	// Contains details about the prevalidation configuration.
+	PrevalidationDetails *PrevalidationDetails `json:"prevalidationDetails,omitempty"`
+	PrevalidationType    *string               `json:"prevalidationType,omitempty"`
+	Status               *string               `json:"status,omitempty"`
+	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
 }
 
 // Contains summary information about an ACME endpoint.
@@ -260,9 +276,21 @@ type CustomAttribute struct {
 
 // DNS prevalidation details including the resource record for validation.
 type DNSPrevalidationDetails struct {
+	// Specifies the scope of domain validation.
+	DomainScope  *DomainScope `json:"domainScope,omitempty"`
+	HostedZoneID *string      `json:"hostedZoneID,omitempty"`
 	// Contains a DNS record value that you can use to validate ownership or control
 	// of a domain. This is used by the DescribeCertificate action.
 	ResourceRecord *ResourceRecord `json:"resourceRecord,omitempty"`
+}
+
+// DNS prevalidation options for domain validation.
+type DNSPrevalidationOptions struct {
+	// Specifies the scope of domain validation.
+	DomainScope  *DomainScope `json:"domainScope,omitempty"`
+	HostedZoneID *string      `json:"hostedZoneID,omitempty"`
+	// Reference field for HostedZoneID
+	HostedZoneRef *ackv1alpha1.AWSResourceReferenceWrapper `json:"hostedZoneRef,omitempty"`
 }
 
 // Contains X.500 distinguished name information.
@@ -281,6 +309,13 @@ type DistinguishedName struct {
 	State                      *string `json:"state,omitempty"`
 	Surname                    *string `json:"surname,omitempty"`
 	Title                      *string `json:"title,omitempty"`
+}
+
+// Specifies the scope of domain validation.
+type DomainScope struct {
+	ExactDomain *string `json:"exactDomain,omitempty"`
+	Subdomains  *string `json:"subdomains,omitempty"`
+	Wildcards   *string `json:"wildcards,omitempty"`
 }
 
 // Contains information about the validation of each domain name in the certificate.
@@ -317,6 +352,7 @@ type ExtendedKeyUsage struct {
 // Contains details about a failure.
 type FailureDetails struct {
 	Message *string `json:"message,omitempty"`
+	Reason  *string `json:"reason,omitempty"`
 }
 
 // This structure can be used in the ListCertificates action to filter the output
@@ -359,6 +395,18 @@ type KeyUsage struct {
 type OtherName struct {
 	ObjectIdentifier *string `json:"objectIdentifier,omitempty"`
 	Value            *string `json:"value,omitempty"`
+}
+
+// Contains details about the prevalidation configuration.
+type PrevalidationDetails struct {
+	// DNS prevalidation details including the resource record for validation.
+	DNSPrevalidation *DNSPrevalidationDetails `json:"dnsPrevalidation,omitempty"`
+}
+
+// Specifies prevalidation options for domain validation.
+type PrevalidationOptions struct {
+	// DNS prevalidation options for domain validation.
+	DNSPrevalidation *DNSPrevalidationOptions `json:"dnsPrevalidation,omitempty"`
 }
 
 // Configuration for a public certificate authority.

@@ -18,6 +18,10 @@
                 "acm:DescribeAcmeEndpoint",
                 "acm:UpdateAcmeEndpoint",
                 "acm:DeleteAcmeEndpoint",
+                "acm:CreateAcmeDomainValidation",
+                "acm:DescribeAcmeDomainValidation",
+                "acm:UpdateAcmeDomainValidation",
+                "acm:DeleteAcmeDomainValidation",
                 "acm:TagResource",
                 "acm:UntagResource",
                 "acm:ListTagsForResource"
