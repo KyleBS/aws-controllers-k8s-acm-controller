@@ -143,3 +143,61 @@ spec:
         wildcards: ENABLED
 ```
 
+### AcmeExternalAccountBinding
+
+Creates EAB credentials that authorize ACME clients to register accounts with the endpoint.
+
+You must create the target Secret before creating the resource — the controller
+populates an existing Secret rather than creating one (the same pattern as the
+`Certificate` resource's `exportTo` field).
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-eab-credentials
+  namespace: default
+type: Opaque
+---
+apiVersion: acm.services.k8s.aws/v1alpha1
+kind: AcmeExternalAccountBinding
+metadata:
+  name: my-eab
+spec:
+  acmeEndpointARN: arn:aws:acm:us-east-1:123456789012:acme-endpoint/abc-123
+  roleARN: arn:aws:iam::123456789012:role/AcmeAccountRole
+  credentialsOutput:
+    namespace: default
+    name: my-eab-credentials
+    key: macKey
+```
+
+After creation, the controller writes the sensitive `macKey` into the specified Kubernetes Secret under the given `key`, and also writes the `keyId` under a fixed `keyId` key (unless `key` is itself `keyId`, in which case the `macKey` wins and the identifier is available in `status.keyID`). The Secret must already exist. If `namespace` is omitted, the resource's namespace is used.
+
+The IAM role named by `roleARN` is assumed by the ACME service to issue certificates, so
+its trust policy must grant **`acm-acme.amazonaws.com`** — not `acm.amazonaws.com` — access
+to `sts:AssumeRole`, `sts:SetSourceIdentity` and `sts:TagSession`. All three are required;
+a role granting only `sts:AssumeRole` is rejected when the binding is created:
+
+```json
+{"Version": "2012-10-17", "Statement": [{
+  "Effect": "Allow",
+  "Principal": {"Service": "acm-acme.amazonaws.com"},
+  "Action": ["sts:AssumeRole", "sts:SetSourceIdentity", "sts:TagSession"]}]}
+```
+
+The role also needs `acm:RequestCertificate`, `acm:DescribeCertificate` and
+`acm:GetCertificate`.
+
+Note the two service principals are different, and both values matter:
+
+| Where | Value |
+|---|---|
+| the issuance role's **trust policy** | `acm-acme.amazonaws.com` |
+| the controller's `iam:PassRole` **condition** (`iam:PassedToService`) | `acm.amazonaws.com` |
+
+Verified against the service: a trust policy naming `acm.amazonaws.com` is rejected when the
+binding is created, and a `PassRole` condition naming only `acm-acme.amazonaws.com` denies the
+create call. `config/iam/recommended-inline-policy` uses the correct value.
+
+The non-sensitive key identifier is also surfaced in `status.keyID`, so ACME clients can reference it directly without reading the Secret. The sensitive `macKey` is only ever written to the Secret.

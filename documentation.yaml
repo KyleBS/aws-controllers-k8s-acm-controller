@@ -43,3 +43,26 @@ resources:
           Configuration for domain prevalidation. Specify DnsPrevalidation with a
           Route 53 HostedZoneId and optional DomainScope (ExactDomain, Subdomains,
           Wildcards — each ENABLED or DISABLED).
+  AcmeExternalAccountBinding:
+    fields:
+      AcmeEndpointARN:
+        prepend: |
+          The ARN of the ACME endpoint to associate this external account binding with.
+      RoleARN:
+        prepend: |
+          The ARN of the IAM role associated with the external account binding.
+          The role's trust policy must grant acm-acme.amazonaws.com access to
+          sts:AssumeRole, sts:SetSourceIdentity, and sts:TagSession.
+      CredentialsOutput:
+        prepend: |
+          The Kubernetes Secret where EAB credentials are written. Specify the namespace,
+          name, and key. The sensitive macKey is written under the given key; the keyId is
+          written under a fixed keyId key, unless key is itself keyId, in which case the
+          macKey wins and the identifier is available in status.keyID. If namespace is
+          omitted, the resource's namespace is used. The Secret must already exist; the
+          controller populates it.
+      KeyID:
+        prepend: |
+          The external account binding key identifier. This value is not sensitive and
+          pairs with the macKey stored in the credentials Secret. It is surfaced in status
+          so ACME clients can reference it directly when registering an account.

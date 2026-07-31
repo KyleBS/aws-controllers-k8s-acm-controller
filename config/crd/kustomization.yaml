@@ -4,4 +4,5 @@ resources:
   - common
   - bases/acm.services.k8s.aws_acmedomainvalidations.yaml
   - bases/acm.services.k8s.aws_acmeendpoints.yaml
+  - bases/acm.services.k8s.aws_acmeexternalaccountbindings.yaml
   - bases/acm.services.k8s.aws_certificates.yaml

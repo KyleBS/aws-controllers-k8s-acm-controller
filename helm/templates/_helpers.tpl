@@ -74,6 +74,7 @@ rules:
   resources:
   - acmedomainvalidations
   - acmeendpoints
+  - acmeexternalaccountbindings
   - certificates
   verbs:
   - create
@@ -88,6 +89,7 @@ rules:
   resources:
   - acmedomainvalidations/status
   - acmeendpoints/status
+  - acmeexternalaccountbindings/status
   - certificates/status
   verbs:
   - get

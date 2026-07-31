@@ -67,16 +67,18 @@ type ACMCertificateMetadataFilter struct {
 
 // Contains detailed information about an ACME account.
 type AcmeAccount struct {
-	AccountURL          *string      `json:"accountURL,omitempty"`
-	CreatedAt           *metav1.Time `json:"createdAt,omitempty"`
-	PublicKeyThumbprint *string      `json:"publicKeyThumbprint,omitempty"`
+	AccountURL                    *string      `json:"accountURL,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint           *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
 // Contains summary information about an ACME account.
 type AcmeAccountSummary struct {
-	AccountURL          *string      `json:"accountURL,omitempty"`
-	CreatedAt           *metav1.Time `json:"createdAt,omitempty"`
-	PublicKeyThumbprint *string      `json:"publicKeyThumbprint,omitempty"`
+	AccountURL                    *string      `json:"accountURL,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	PublicKeyThumbprint           *string      `json:"publicKeyThumbprint,omitempty"`
 }
 
 // Contains summary information about an ACME domain validation.
@@ -139,24 +141,28 @@ type AcmeEndpoint_SDK struct {
 	UpdatedAt            *metav1.Time          `json:"updatedAt,omitempty"`
 }
 
-// Contains detailed information about an ACME external account binding.
-type AcmeExternalAccountBinding struct {
-	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
-	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
-	ExpiresAt       *metav1.Time `json:"expiresAt,omitempty"`
-	LastUsedAt      *metav1.Time `json:"lastUsedAt,omitempty"`
-	RevokedAt       *metav1.Time `json:"revokedAt,omitempty"`
-	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
-}
-
 // Contains summary information about an ACME external account binding.
 type AcmeExternalAccountBindingSummary struct {
-	AcmeEndpointARN *string      `json:"acmeEndpointARN,omitempty"`
-	CreatedAt       *metav1.Time `json:"createdAt,omitempty"`
-	ExpiresAt       *metav1.Time `json:"expiresAt,omitempty"`
-	LastUsedAt      *metav1.Time `json:"lastUsedAt,omitempty"`
-	RevokedAt       *metav1.Time `json:"revokedAt,omitempty"`
-	UpdatedAt       *metav1.Time `json:"updatedAt,omitempty"`
+	AcmeEndpointARN               *string      `json:"acmeEndpointARN,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt                     *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt                    *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt                     *metav1.Time `json:"revokedAt,omitempty"`
+	RoleARN                       *string      `json:"roleARN,omitempty"`
+	UpdatedAt                     *metav1.Time `json:"updatedAt,omitempty"`
+}
+
+// Contains detailed information about an ACME external account binding.
+type AcmeExternalAccountBinding_SDK struct {
+	AcmeEndpointARN               *string      `json:"acmeEndpointARN,omitempty"`
+	AcmeExternalAccountBindingARN *string      `json:"acmeExternalAccountBindingARN,omitempty"`
+	CreatedAt                     *metav1.Time `json:"createdAt,omitempty"`
+	ExpiresAt                     *metav1.Time `json:"expiresAt,omitempty"`
+	LastUsedAt                    *metav1.Time `json:"lastUsedAt,omitempty"`
+	RevokedAt                     *metav1.Time `json:"revokedAt,omitempty"`
+	RoleARN                       *string      `json:"roleARN,omitempty"`
+	UpdatedAt                     *metav1.Time `json:"updatedAt,omitempty"`
 }
 
 // Defines the certificate authority to use for an ACME endpoint.
@@ -339,6 +345,12 @@ type DomainValidation struct {
 type DomainValidationOption struct {
 	DomainName       *string `json:"domainName,omitempty"`
 	ValidationDomain *string `json:"validationDomain,omitempty"`
+}
+
+// Specifies an expiration configuration.
+type Expiration struct {
+	Type  *string `json:"type_,omitempty"`
+	Value *int64  `json:"value,omitempty"`
 }
 
 // The Extended Key Usage X.509 v3 extension defines one or more purposes for

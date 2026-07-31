@@ -15,13 +15,102 @@
 for them.
 """
 
-from dataclasses import dataclass
-from acktest.bootstrapping import Resources
+import json
+from dataclasses import dataclass, field
+
+import boto3
+
+from acktest import resources
+from acktest.bootstrapping import Bootstrappable, Resources
 from e2e import bootstrap_directory
+
+# The IAM role associated with an external account binding. The ACME service
+# assumes this role to issue certificates on behalf of ACME clients, so its
+# trust policy must grant acm-acme.amazonaws.com sts:AssumeRole,
+# sts:TagSession, and sts:SetSourceIdentity, and it needs certificate
+# issuance permissions.
+EAB_TRUST_POLICY = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {"Service": "acm-acme.amazonaws.com"},
+            "Action": [
+                "sts:AssumeRole",
+                "sts:TagSession",
+                "sts:SetSourceIdentity",
+            ],
+        }
+    ],
+}
+
+EAB_ISSUANCE_POLICY = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "acm:RequestCertificate",
+                "acm:DescribeCertificate",
+                "acm:GetCertificate",
+            ],
+            "Resource": "*",
+        }
+    ],
+}
+
+
+@dataclass
+class EABIssuanceRole(Bootstrappable):
+    # Inputs
+    name_prefix: str
+
+    # Outputs
+    name: str = field(init=False)
+    arn: str = field(default="", init=False)
+
+    def __post_init__(self):
+        self.name = resources.random_suffix_name(self.name_prefix, 63)
+
+    @property
+    def iam_client(self):
+        return boto3.client("iam", region_name=self.region)
+
+    def bootstrap(self):
+        """Creates the EAB issuance role with the ACME service trust policy."""
+        super().bootstrap()
+        role = self.iam_client.create_role(
+            RoleName=self.name,
+            AssumeRolePolicyDocument=json.dumps(EAB_TRUST_POLICY),
+            Description="ACK ACM e2e test role for ACME external account bindings",
+        )
+        self.arn = role["Role"]["Arn"]
+        self.iam_client.put_role_policy(
+            RoleName=self.name,
+            PolicyName="acme-issuance",
+            PolicyDocument=json.dumps(EAB_ISSUANCE_POLICY),
+        )
+
+    def cleanup(self):
+        """Deletes the EAB issuance role.
+
+        Tolerant of partial state: bootstrap can fail between create_role and
+        put_role_policy, and cleanup must not then raise and mask the original failure.
+        """
+        try:
+            self.iam_client.delete_role_policy(RoleName=self.name, PolicyName="acme-issuance")
+        except self.iam_client.exceptions.NoSuchEntityException:
+            pass
+        try:
+            self.iam_client.delete_role(RoleName=self.name)
+        except self.iam_client.exceptions.NoSuchEntityException:
+            pass
+        super().cleanup()
+
 
 @dataclass
 class BootstrapResources(Resources):
-    pass
+    EABRole: EABIssuanceRole = field(default=None)
 
 _bootstrap_resources = None
 
