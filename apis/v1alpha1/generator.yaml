@@ -1,11 +1,10 @@
 ignore:
-  resource_names:
-    - AcmeExternalAccountBinding
   field_paths:
     - "RequestCertificateInput.IdempotencyToken"
     - "RequestCertificateInput.ValidationMethod"
     - "CreateAcmeEndpointInput.IdempotencyToken"
     - "CreateAcmeDomainValidationInput.IdempotencyToken"
+    - "CreateAcmeExternalAccountBindingInput.IdempotencyToken"
 operations:
   RequestCertificate:
     resource_name: Certificate
@@ -42,6 +41,15 @@ operations:
     operation_type: UPDATE
   DeleteAcmeDomainValidation:
     resource_name: AcmeDomainValidation
+    operation_type: DELETE
+  CreateAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
+    operation_type: CREATE
+  DescribeAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
+    operation_type: READ_ONE
+  DeleteAcmeExternalAccountBinding:
+    resource_name: AcmeExternalAccountBinding
     operation_type: DELETE
 resources:
   Certificate:
@@ -393,3 +401,100 @@ resources:
         from:
           operation: DescribeAcmeDomainValidation
           path: AcmeDomainValidation.UpdatedAt
+  AcmeExternalAccountBinding:
+    tags:
+      ignore: false
+    hooks:
+      sdk_create_post_set_output:
+        template_path: hooks/acme_external_account_binding/sdk_create_post_set_output.go.tpl
+      sdk_read_one_post_set_output:
+        template_path: hooks/acme_external_account_binding/sdk_read_one_post_set_output.go.tpl
+    # The external account binding has no service-side update operation, so the
+    # generated sdkUpdate is a custom method that reconciles only the tag set
+    # via the standardized TagResource/UntagResource API.
+    update_operation:
+      custom_method_name: customUpdateAcmeExternalAccountBinding
+    exceptions:
+      errors:
+        404:
+          code: ResourceNotFoundException
+      terminal_codes:
+        - InvalidParameterException
+        - InvalidArnException
+        - InvalidTagException
+        - TagPolicyException
+        - TooManyTagsException
+    # A short requeue keeps the server-side status fields (lastUsedAt, revokedAt,
+    # expiresAt) close to reality, since the service changes them without any spec edit
+    # to trigger a reconcile. Same interval as Certificate above; AcmeEndpoint uses 30s.
+    reconcile:
+      requeue_on_success_seconds: 60
+    fields:
+      AcmeEndpointArn:
+        is_immutable: true
+        references:
+          resource: AcmeEndpoint
+          path: Status.ACKResourceMetadata.ARN
+      # Reviewer suggestion: a cross-resource reference so an operator can point at an ACK
+      # IAM Role object instead of copying its ARN in by hand.
+      RoleArn:
+        is_immutable: true
+        references:
+          resource: Role
+          service_name: iam
+          path: Status.ACKResourceMetadata.ARN
+      Expiration:
+        is_immutable: true
+      # `type` is a Go keyword, so the names package suffixes the generated field — and the
+      # suffix leaks into the JSON tag, which is why released CRDs in this controller carry
+      # `type_`. code-generator added go_tag precisely so NEW fields need not inherit that;
+      # its own comment calls the underscore "not ideal because it weirdens the experience for
+      # the users of the generated CRDs", and declined to fix the names package only because
+      # doing so would rewrite already-published CRDs. Expiration is used by no other resource
+      # here and this one is unreleased, so this is the last moment the name can be chosen.
+      # ec2-controller and lambda-controller do the same for their nested Type fields.
+      Expiration.Type:
+        go_tag: json:"type,omitempty"
+      # Secret where EAB credentials (keyId, macKey) are written. Uses the same
+      # SecretKeyReference pattern as Certificate.exportTo so users can target a
+      # Secret in any namespace. The Secret must already exist — the controller
+      # populates it (WriteToSecret patches, it does not create).
+      CredentialsOutput:
+        type: "bytes"
+        is_secret: true
+        is_immutable: true
+        compare:
+          is_ignored: true
+      # Status fields from DescribeAcmeExternalAccountBinding
+      # KeyID is the EAB key identifier (not sensitive; pairs with the macKey
+      # stored in the Secret). It is populated by the create hook from the
+      # GetAcmeExternalAccountBindingCredentials response so ACME clients can
+      # read it from status when registering an account.
+      KeyID:
+        is_read_only: true
+        type: string
+      CreatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.CreatedAt
+      ExpiresAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.ExpiresAt
+      LastUsedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.LastUsedAt
+      RevokedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.RevokedAt
+      UpdatedAt:
+        is_read_only: true
+        from:
+          operation: DescribeAcmeExternalAccountBinding
+          path: ExternalAccountBinding.UpdatedAt

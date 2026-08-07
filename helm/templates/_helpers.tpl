@@ -74,6 +74,7 @@ rules:
   resources:
   - acmedomainvalidations
   - acmeendpoints
+  - acmeexternalaccountbindings
   - certificates
   verbs:
   - create
@@ -88,6 +89,7 @@ rules:
   resources:
   - acmedomainvalidations/status
   - acmeendpoints/status
+  - acmeexternalaccountbindings/status
   - certificates/status
   verbs:
   - get
@@ -98,6 +100,14 @@ rules:
   resources:
   - certificateauthorities
   - certificateauthorities/status
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - iam.services.k8s.aws
+  resources:
+  - roles
+  - roles/status
   verbs:
   - get
   - list

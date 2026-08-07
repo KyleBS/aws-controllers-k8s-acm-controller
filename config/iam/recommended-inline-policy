@@ -22,11 +22,26 @@
                 "acm:DescribeAcmeDomainValidation",
                 "acm:UpdateAcmeDomainValidation",
                 "acm:DeleteAcmeDomainValidation",
+                "acm:CreateAcmeExternalAccountBinding",
+                "acm:DescribeAcmeExternalAccountBinding",
+                "acm:DeleteAcmeExternalAccountBinding",
+                "acm:GetAcmeExternalAccountBindingCredentials",
                 "acm:TagResource",
                 "acm:UntagResource",
                 "acm:ListTagsForResource"
             ],
             "Resource": "*"
+        },
+        {
+            "Sid": "ACMPassIssuanceRole",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "acm.amazonaws.com"
+                }
+            }
         },
         {
             "Sid": "ACMPrivateCertificatePermissions",

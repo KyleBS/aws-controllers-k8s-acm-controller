@@ -18,6 +18,7 @@ rules:
   resources:
   - acmedomainvalidations
   - acmeendpoints
+  - acmeexternalaccountbindings
   - certificates
   verbs:
   - get

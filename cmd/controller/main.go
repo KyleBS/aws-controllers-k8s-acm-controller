@@ -22,6 +22,7 @@ import (
 	"runtime/debug"
 
 	acmpcaapitypes "github.com/aws-controllers-k8s/acmpca-controller/apis/v1alpha1"
+	iamapitypes "github.com/aws-controllers-k8s/iam-controller/apis/v1alpha1"
 	route53apitypes "github.com/aws-controllers-k8s/route53-controller/apis/v1alpha1"
 	ackv1alpha1 "github.com/aws-controllers-k8s/runtime/apis/core/v1alpha1"
 	ackcfg "github.com/aws-controllers-k8s/runtime/pkg/config"
@@ -45,6 +46,7 @@ import (
 
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_domain_validation"
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_endpoint"
+	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/acme_external_account_binding"
 	_ "github.com/aws-controllers-k8s/acm-controller/pkg/resource/certificate"
 
 	"github.com/aws-controllers-k8s/acm-controller/pkg/version"
@@ -78,6 +80,7 @@ func init() {
 	_ = svctypes.AddToScheme(scheme)
 	_ = ackv1alpha1.AddToScheme(scheme)
 	_ = acmpcaapitypes.AddToScheme(scheme)
+	_ = iamapitypes.AddToScheme(scheme)
 	_ = route53apitypes.AddToScheme(scheme)
 }
 
